@@ -300,7 +300,43 @@ header {
 .nav-cta {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
+}
+
+.nav-socials {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-social-link {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(18, 22, 27, 0.6);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fog-dim);
+  transition: color 0.18s ease, border-color 0.18s ease, background-color 0.18s ease, transform 0.18s ease;
+}
+
+.nav-social-link:hover {
+  color: #ffffff;
+  border-color: var(--spray);
+  background: rgba(63, 194, 230, 0.12);
+  transform: translateY(-2px);
+}
+
+.nav-social-tiktok:hover {
+  color: #25F4EE;
+  border-color: #FE2C55;
+}
+
+.nav-social-facebook:hover {
+  color: #1877F2;
+  border-color: #1877F2;
 }
 
 .nav-phone {
@@ -1699,8 +1735,12 @@ footer ul a:hover {
   .nav-links {
     display: none;
   }
-  .nav-phone span {
-    display: none;
+  .nav-phone,
+  .nav-call-btn {
+    display: none !important;
+  }
+  .nav-cta {
+    gap: 10px;
   }
   .menu-toggle {
     display: flex;
