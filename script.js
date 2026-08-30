@@ -218,66 +218,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ---------- Hero Video Controls & Reel Switcher (Dual Backdrop + Main Video) ----------
+  // ---------- Hero Video Playback (Muted by Default) ----------
   const heroVideoMain = document.getElementById('heroVideoMain') || document.getElementById('heroVideo');
   const heroVideoBackdrop = document.getElementById('heroVideoBackdrop');
-  const heroSoundToggle = document.getElementById('heroSoundToggle');
-  const soundMutedIcon = document.getElementById('soundMutedIcon');
-  const soundActiveIcon = document.getElementById('soundActiveIcon');
-  const soundText = document.getElementById('soundText');
-  const btnVideoSemi = document.getElementById('btnVideoSemi');
-  const btnVideoLoader = document.getElementById('btnVideoLoader');
 
   if (heroVideoMain) {
-    if (heroSoundToggle) {
-      heroSoundToggle.addEventListener('click', () => {
-        if (heroVideoMain.muted) {
-          heroVideoMain.muted = false;
-          if (soundMutedIcon) soundMutedIcon.style.display = 'none';
-          if (soundActiveIcon) soundActiveIcon.style.display = 'inline-block';
-          if (soundText) soundText.textContent = 'Sound On';
-        } else {
-          heroVideoMain.muted = true;
-          if (soundMutedIcon) soundMutedIcon.style.display = 'inline-block';
-          if (soundActiveIcon) soundActiveIcon.style.display = 'none';
-          if (soundText) soundText.textContent = 'Sound Off';
-        }
-      });
-    }
-
-    const switchHeroVideo = (src, activeBtn, inactiveBtn) => {
-      if (!heroVideoMain.src.includes(src)) {
-        heroVideoMain.style.opacity = '0.3';
-        if (heroVideoBackdrop) heroVideoBackdrop.style.opacity = '0.3';
-
-        setTimeout(() => {
-          heroVideoMain.src = src;
-          heroVideoMain.load();
-          heroVideoMain.play().catch(() => {});
-          heroVideoMain.style.opacity = '1';
-
-          if (heroVideoBackdrop) {
-            heroVideoBackdrop.src = src;
-            heroVideoBackdrop.load();
-            heroVideoBackdrop.play().catch(() => {});
-            heroVideoBackdrop.style.opacity = '1';
-          }
-        }, 200);
-      }
-      if (activeBtn) activeBtn.classList.add('active');
-      if (inactiveBtn) inactiveBtn.classList.remove('active');
-    };
-
-    if (btnVideoSemi) {
-      btnVideoSemi.addEventListener('click', () => {
-        switchHeroVideo(btnVideoSemi.dataset.video, btnVideoSemi, btnVideoLoader);
-      });
-    }
-
-    if (btnVideoLoader) {
-      btnVideoLoader.addEventListener('click', () => {
-        switchHeroVideo(btnVideoLoader.dataset.video, btnVideoLoader, btnVideoSemi);
-      });
-    }
+    heroVideoMain.muted = true;
+    heroVideoMain.play().catch(() => {});
+  }
+  if (heroVideoBackdrop) {
+    heroVideoBackdrop.muted = true;
+    heroVideoBackdrop.play().catch(() => {});
   }
 });
