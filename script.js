@@ -158,4 +158,57 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 800);
     });
   }
+
+  // ---------- Hero Video Controls & Reel Switcher ----------
+  const heroVideo = document.getElementById('heroVideo');
+  const heroSoundToggle = document.getElementById('heroSoundToggle');
+  const soundMutedIcon = document.getElementById('soundMutedIcon');
+  const soundActiveIcon = document.getElementById('soundActiveIcon');
+  const soundText = document.getElementById('soundText');
+  const btnVideoSemi = document.getElementById('btnVideoSemi');
+  const btnVideoLoader = document.getElementById('btnVideoLoader');
+
+  if (heroVideo) {
+    if (heroSoundToggle) {
+      heroSoundToggle.addEventListener('click', () => {
+        if (heroVideo.muted) {
+          heroVideo.muted = false;
+          if (soundMutedIcon) soundMutedIcon.style.display = 'none';
+          if (soundActiveIcon) soundActiveIcon.style.display = 'inline-block';
+          if (soundText) soundText.textContent = 'Sound On';
+        } else {
+          heroVideo.muted = true;
+          if (soundMutedIcon) soundMutedIcon.style.display = 'inline-block';
+          if (soundActiveIcon) soundActiveIcon.style.display = 'none';
+          if (soundText) soundText.textContent = 'Sound Off';
+        }
+      });
+    }
+
+    const switchHeroVideo = (src, activeBtn, inactiveBtn) => {
+      if (!heroVideo.src.includes(src)) {
+        heroVideo.style.opacity = '0.3';
+        setTimeout(() => {
+          heroVideo.src = src;
+          heroVideo.load();
+          heroVideo.play().catch(() => {});
+          heroVideo.style.opacity = '1';
+        }, 200);
+      }
+      if (activeBtn) activeBtn.classList.add('active');
+      if (inactiveBtn) inactiveBtn.classList.remove('active');
+    };
+
+    if (btnVideoSemi) {
+      btnVideoSemi.addEventListener('click', () => {
+        switchHeroVideo(btnVideoSemi.dataset.video, btnVideoSemi, btnVideoLoader);
+      });
+    }
+
+    if (btnVideoLoader) {
+      btnVideoLoader.addEventListener('click', () => {
+        switchHeroVideo(btnVideoLoader.dataset.video, btnVideoLoader, btnVideoSemi);
+      });
+    }
+  }
 });
