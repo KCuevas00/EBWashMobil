@@ -20,16 +20,16 @@ document.addEventListener('DOMContentLoaded', () => {
     revealEls.forEach((el) => el.classList.add('in'));
   }
 
-  // ---------- Header Scroll State (Transparent to Scrolled) & Mobile Menu ----------
-  const header = document.querySelector('header');
-  const menuToggle = document.getElementById('menuToggle');
-  const mobileNav = document.getElementById('mobileNav');
+  // ---------- Header Scroll State (Transparent to Scrolled) & Mobile Menu (Quechidos Style) ----------
+  const header = document.querySelector('header.site') || document.querySelector('header');
+  const navToggle = document.querySelector('.nav-toggle') || document.getElementById('menuToggle');
+  const mainNav = document.querySelector('nav.main-nav') || document.getElementById('mobileNav');
 
   const updateHeaderState = () => {
     if (!header) return;
-    const isMenuOpen = mobileNav && mobileNav.classList.contains('open');
+    const isMenuOpen = header.classList.contains('menu-open') || (mainNav && mainNav.classList.contains('open'));
 
-    if (window.scrollY > 20) {
+    if (window.scrollY > 40) {
       header.classList.add('scrolled');
     } else {
       header.classList.remove('scrolled');
@@ -78,18 +78,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  if (menuToggle && mobileNav) {
-    menuToggle.addEventListener('click', () => {
-      const isOpen = mobileNav.classList.toggle('open');
-      menuToggle.setAttribute('aria-expanded', isOpen);
+  if (navToggle && mainNav) {
+    navToggle.addEventListener('click', () => {
+      mainNav.classList.toggle('open');
+      header.classList.toggle('menu-open');
+      const isNowOpen = mainNav.classList.contains('open');
+      navToggle.setAttribute('aria-expanded', isNowOpen);
       updateHeaderState();
     });
 
     // Close mobile nav when clicking any link
-    mobileNav.querySelectorAll('a').forEach((link) => {
+    mainNav.querySelectorAll('a').forEach((link) => {
       link.addEventListener('click', () => {
-        mobileNav.classList.remove('open');
-        menuToggle.setAttribute('aria-expanded', 'false');
+        mainNav.classList.remove('open');
+        header.classList.remove('menu-open');
+        navToggle.setAttribute('aria-expanded', 'false');
         updateHeaderState();
       });
     });
@@ -215,8 +218,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ---------- Hero Video Controls & Reel Switcher ----------
-  const heroVideo = document.getElementById('heroVideo');
+  // ---------- Hero Video Controls & Reel Switcher (Dual Backdrop + Main Video) ----------
+  const heroVideoMain = document.getElementById('heroVideoMain') || document.getElementById('heroVideo');
+  const heroVideoBackdrop = document.getElementById('heroVideoBackdrop');
   const heroSoundToggle = document.getElementById('heroSoundToggle');
   const soundMutedIcon = document.getElementById('soundMutedIcon');
   const soundActiveIcon = document.getElementById('soundActiveIcon');
@@ -224,16 +228,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnVideoSemi = document.getElementById('btnVideoSemi');
   const btnVideoLoader = document.getElementById('btnVideoLoader');
 
-  if (heroVideo) {
+  if (heroVideoMain) {
     if (heroSoundToggle) {
       heroSoundToggle.addEventListener('click', () => {
-        if (heroVideo.muted) {
-          heroVideo.muted = false;
+        if (heroVideoMain.muted) {
+          heroVideoMain.muted = false;
           if (soundMutedIcon) soundMutedIcon.style.display = 'none';
           if (soundActiveIcon) soundActiveIcon.style.display = 'inline-block';
           if (soundText) soundText.textContent = 'Sound On';
         } else {
-          heroVideo.muted = true;
+          heroVideoMain.muted = true;
           if (soundMutedIcon) soundMutedIcon.style.display = 'inline-block';
           if (soundActiveIcon) soundActiveIcon.style.display = 'none';
           if (soundText) soundText.textContent = 'Sound Off';
@@ -242,13 +246,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const switchHeroVideo = (src, activeBtn, inactiveBtn) => {
-      if (!heroVideo.src.includes(src)) {
-        heroVideo.style.opacity = '0.3';
+      if (!heroVideoMain.src.includes(src)) {
+        heroVideoMain.style.opacity = '0.3';
+        if (heroVideoBackdrop) heroVideoBackdrop.style.opacity = '0.3';
+
         setTimeout(() => {
-          heroVideo.src = src;
-          heroVideo.load();
-          heroVideo.play().catch(() => {});
-          heroVideo.style.opacity = '1';
+          heroVideoMain.src = src;
+          heroVideoMain.load();
+          heroVideoMain.play().catch(() => {});
+          heroVideoMain.style.opacity = '1';
+
+          if (heroVideoBackdrop) {
+            heroVideoBackdrop.src = src;
+            heroVideoBackdrop.load();
+            heroVideoBackdrop.play().catch(() => {});
+            heroVideoBackdrop.style.opacity = '1';
+          }
         }, 200);
       }
       if (activeBtn) activeBtn.classList.add('active');
