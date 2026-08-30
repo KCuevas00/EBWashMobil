@@ -1780,6 +1780,51 @@ footer p {
   line-height: 1.6;
 }
 
+.footer-socials {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.footer-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  color: var(--fog);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.footer-social-link svg {
+  flex-shrink: 0;
+}
+
+.footer-social-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.footer-social-tiktok:hover {
+  border-color: #FE2C55;
+  color: #25F4EE;
+  box-shadow: 0 4px 14px rgba(254, 44, 85, 0.25);
+}
+
+.footer-social-facebook:hover {
+  border-color: #1877F2;
+  color: #1877F2;
+  box-shadow: 0 4px 14px rgba(24, 119, 242, 0.25);
+}
+
 footer h4 {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.78rem;
