@@ -208,14 +208,35 @@ h1, h2, h3, h4 {
   border-bottom: 1px solid rgba(0, 0, 0, 0.3);
 }
 
-/* ---------- Header & Navigation ---------- */
+/* ---------- Header & Navigation (Transparent to Scrolled) ---------- */
 header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  width: 100%;
   z-index: 100;
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  box-shadow: none;
+  transition: background 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              backdrop-filter 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              -webkit-backdrop-filter 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+header.scrolled {
   background: rgba(18, 22, 27, 0.94);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  backdrop-filter: saturate(160%) blur(14px);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+}
+
+header.menu-open {
+  background: rgba(18, 22, 27, 0.98) !important;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--line);
 }
 
@@ -223,22 +244,59 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 24px;
+  padding: 22px 24px;
+  transition: padding 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+header.scrolled .nav {
+  padding: 10px 24px;
 }
 
 .brand {
   display: flex;
   align-items: center;
   gap: 14px;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.brand:hover {
+  transform: translateY(-1px);
+}
+
+.brand-logo-circle {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2.5px solid var(--hazard);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-width 0.35s ease,
+              box-shadow 0.35s ease;
+}
+
+header.scrolled .brand-logo-circle {
+  width: 48px;
+  height: 48px;
+  border-width: 2px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .brand-text {
   font-family: 'Oswald', sans-serif;
-  font-size: 1.32rem;
+  font-size: 1.35rem;
   font-weight: 600;
   color: #ffffff;
   letter-spacing: 0.02em;
   line-height: 1;
+  transition: font-size 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+header.scrolled .brand-text {
+  font-size: 1.18rem;
 }
 
 .brand-text small {
@@ -462,7 +520,7 @@ header {
   position: relative;
   z-index: 3;
   width: 100%;
-  padding: 100px 0 70px;
+  padding: 140px 0 70px;
 }
 
 .hero-video-controls {
@@ -586,7 +644,7 @@ header {
 /* ---------- Page Header Banners (Subpages) ---------- */
 .page-banner {
   position: relative;
-  padding: 80px 0 60px;
+  padding: 140px 0 60px;
   background: linear-gradient(135deg, var(--asphalt-soft) 0%, var(--steel-deep) 100%);
   border-bottom: 1px solid var(--line);
   overflow: hidden;
@@ -647,6 +705,62 @@ section {
 .section-head {
   max-width: 680px;
   margin-bottom: 52px;
+}
+
+/* ---------- Strategic Logo Badges (HDZ Style) ---------- */
+.hero-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin: 18px 0 20px;
+}
+
+.hero-title-wrap h1 {
+  margin: 0 !important;
+}
+
+.hero-title-logo {
+  width: clamp(64px, 7.5vw, 88px);
+  height: clamp(64px, 7.5vw, 88px);
+  border-radius: 50%;
+  border: 3px solid var(--hazard);
+  object-fit: cover;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.55);
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.hero-title-logo:hover {
+  transform: scale(1.05) rotate(4deg);
+}
+
+.section-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.section-title-wrap h1,
+.section-title-wrap h2 {
+  margin: 0 !important;
+}
+
+.services-logo-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2.5px solid var(--spray);
+  box-shadow: 0 4px 14px rgba(63, 194, 230, 0.28);
+  flex-shrink: 0;
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.services-logo-badge:hover {
+  transform: scale(1.08) rotate(-4deg);
+  border-color: var(--hazard);
 }
 
 .section-head h2 {
@@ -1732,6 +1846,26 @@ footer ul a:hover {
 }
 
 @media (max-width: 860px) {
+  .nav {
+    padding: 14px 20px;
+  }
+  header.scrolled .nav {
+    padding: 8px 20px;
+  }
+  .brand-logo-circle {
+    width: 62px;
+    height: 62px;
+  }
+  header.scrolled .brand-logo-circle {
+    width: 44px;
+    height: 44px;
+  }
+  .brand-text {
+    font-size: 1.18rem;
+  }
+  header.scrolled .brand-text {
+    font-size: 1.05rem;
+  }
   .nav-links {
     display: none;
   }

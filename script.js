@@ -20,14 +20,36 @@ document.addEventListener('DOMContentLoaded', () => {
     revealEls.forEach((el) => el.classList.add('in'));
   }
 
-  // ---------- Mobile Menu Toggle ----------
+  // ---------- Header Scroll State (Transparent to Scrolled) & Mobile Menu ----------
+  const header = document.querySelector('header');
   const menuToggle = document.getElementById('menuToggle');
   const mobileNav = document.getElementById('mobileNav');
+
+  const updateHeaderState = () => {
+    if (!header) return;
+    const isMenuOpen = mobileNav && mobileNav.classList.contains('open');
+
+    if (window.scrollY > 20) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+
+    if (isMenuOpen) {
+      header.classList.add('menu-open');
+    } else {
+      header.classList.remove('menu-open');
+    }
+  };
+
+  window.addEventListener('scroll', updateHeaderState, { passive: true });
+  updateHeaderState();
 
   if (menuToggle && mobileNav) {
     menuToggle.addEventListener('click', () => {
       const isOpen = mobileNav.classList.toggle('open');
       menuToggle.setAttribute('aria-expanded', isOpen);
+      updateHeaderState();
     });
 
     // Close mobile nav when clicking any link
@@ -35,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
       link.addEventListener('click', () => {
         mobileNav.classList.remove('open');
         menuToggle.setAttribute('aria-expanded', 'false');
+        updateHeaderState();
       });
     });
   }
