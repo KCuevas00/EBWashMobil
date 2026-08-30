@@ -97,7 +97,7 @@
 <div class="chevron-strip"></div>
 
 <!-- ================= CONTACT & FORM SECTION ================= -->
-<section class="contact-section">
+<section id="quote-form" class="contact-section">
   <div class="wrap">
     <div class="contact-layout">
 
@@ -374,6 +374,23 @@
     </div>
   </div>
 </footer>
+
+<!-- Floating Scroll Down Arrow Button (Persists until bottom of page) -->
+<a href="#quote-form" id="floating-scroll-down" class="floating-scroll-down" aria-label="Scroll down">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="6 9 12 15 18 9"></polyline>
+  </svg>
+</a>
+
+<!-- Floating Chat Button (Bottom Right - HDZ Tree Company Style) -->
+<div class="floating-chat-wrap" id="floating-chat-wrap">
+  <a href="#quote-form" class="floating-chat-btn" aria-label="Contact &amp; Free Quote" title="Get Free Quote / Chat">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+    <span class="floating-chat-ping"></span>
+  </a>
+</div>
 
 <!-- Interactive Scripts -->
 <script src="script.js"></script>

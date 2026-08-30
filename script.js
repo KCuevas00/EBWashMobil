@@ -42,8 +42,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.addEventListener('scroll', updateHeaderState, { passive: true });
+  // ---------- Floating Scroll Down Button Visibility (HDZ Tree Company Style) ----------
+  const scrollDownBtn = document.getElementById('floating-scroll-down');
+
+  const updateScrollDownBtn = () => {
+    if (!scrollDownBtn) return;
+    const scrollBottom = window.innerHeight + window.scrollY;
+    const totalHeight = document.documentElement.scrollHeight;
+    if (scrollBottom >= totalHeight - 140) {
+      scrollDownBtn.classList.add('hidden');
+    } else {
+      scrollDownBtn.classList.remove('hidden');
+    }
+  };
+
+  const handleScroll = () => {
+    updateHeaderState();
+    updateScrollDownBtn();
+  };
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
   updateHeaderState();
+  updateScrollDownBtn();
+
+  if (scrollDownBtn) {
+    scrollDownBtn.addEventListener('click', (e) => {
+      const targetId = scrollDownBtn.getAttribute('href');
+      if (targetId && targetId.startsWith('#')) {
+        const targetEl = document.querySelector(targetId);
+        if (targetEl) {
+          e.preventDefault();
+          targetEl.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    });
+  }
 
   if (menuToggle && mobileNav) {
     menuToggle.addEventListener('click', () => {
