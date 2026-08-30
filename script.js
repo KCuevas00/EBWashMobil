@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
       lightbox.classList.remove('active');
       document.body.style.overflow = '';
       setTimeout(() => {
-        lightboxImg.src = '';
+        lightboxImg.src = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\'/%3E';
       }, 250);
     };
 
