@@ -683,6 +683,103 @@ section {
   flex-grow: 1;
 }
 
+/* ---------- Dedicated Service Page Showcase Grid ---------- */
+.service-showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.service-detail-card {
+  background: var(--asphalt-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.service-detail-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--spray);
+  box-shadow: var(--shadow);
+}
+
+.service-detail-img {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  position: relative;
+  background: var(--asphalt);
+}
+
+.service-detail-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.service-detail-card:hover .service-detail-img img {
+  transform: scale(1.05);
+}
+
+.service-detail-body {
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.service-detail-body h3 {
+  font-size: 1.3rem;
+  margin-bottom: 12px;
+}
+
+.service-detail-body p {
+  color: var(--fog-dim);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.service-detail-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.service-detail-features li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: var(--fog);
+}
+
+.service-detail-features svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--spray);
+  flex-shrink: 0;
+}
+
+@media (max-width: 980px) {
+  .service-showcase-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .service-showcase-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ---------- Process / How It Works ---------- */
 .how {
   background: var(--asphalt-soft);
