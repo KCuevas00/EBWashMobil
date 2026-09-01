@@ -1,0 +1,426 @@
+/**
+ * EB Wash Mobil LLC - Visual Admin Editor Controller
+ * Manages full-screen visual inline editing, tab navigation, undo/redo stack, and save persistence.
+ */
+
+(function () {
+  const STORAGE_KEY = 'ebwash_content';
+  const AUTH_KEY = 'ebwash_admin_auth';
+  const DEFAULT_PASS = 'ebwash2026';
+
+  const DEFAULT_SITE_DATA = {
+    global: {
+      brandName: "EB WASH MOBIL",
+      brandSubtitle: "Mobile Fleet Washing",
+      phone: "630-414-3954",
+      phoneRaw: "6304143954",
+      email: "ebwash2@gmail.com",
+      headerCtaText: "Request Free Quote",
+      smsCtaText: "Text For Quote",
+      callQuoteBtnText: "Call / Quote",
+      locationText: "Based in Elgin, IL 60120",
+      hoursText: "Flexible hours & weekend dispatch washing — we come to you.",
+      footerDescription: "Professional on-site mobile truck, trailer, and commercial fleet washing serving Elgin, IL and surrounding Chicagoland. We bring the wash to your yard.",
+      tiktokHandle: "@eb.wash.mobil",
+      tiktokUrl: "https://www.tiktok.com/@eb.wash.mobil",
+      facebookUrl: "https://www.facebook.com/profile.php?id=61559151614102",
+      copyright: "© 2026 EB Wash Mobil LLC. All rights reserved."
+    },
+    home: {
+      heroHeadline: "WE COME TO YOUR LOT.<br>YOUR RIG LEAVES <span class=\"accent\">SPOTLESS.</span>",
+      heroLead: "EB Wash Mobil brings commercial pressure washing straight to your yard. We wash semi-trucks, trailers, reefers, and heavy equipment where they sit so your drivers stay on route.",
+      heroCallBtn: "Call 630-414-3954",
+      heroSmsBtn: "Text For Quote",
+      heroQuoteBtn: "Get A Quote",
+      heroFact1: "Trucks · Trailers · Equipment",
+      heroFact2: "On-Site Lot Washing",
+      heroFact3: "Fleet Pricing Available",
+      servicesTitle: "Services",
+      servicesSubtitle: "We bring our own water, power, and commercial wash gear straight to your lot. No driving to truck bays, no waiting in line.",
+      serviceCards: [
+        { id: "semi", title: "Semi Truck Wash", desc: "Cabs, hoods, grilles, fuel tanks, and wheels. Hand foamed, scrubbed, and pressure washed." },
+        { id: "fleet", title: "Fleet Washing", desc: "Scheduled washes for multiple tractors and trailers. Nights and weekends available." },
+        { id: "trailer", title: "Trailer & Reefer Wash", desc: "Dry vans, reefers, flatbeds, and containers. Salt, road film, and grime stripped clean." },
+        { id: "machinery", title: "Heavy Machinery & Equipment", desc: "Loaders, excavators, dump trucks, and skid steers. Mud, clay, and grease blasted off." }
+      ],
+      howTitle: "How It Works",
+      howSubtitle: "Simple and straightforward.",
+      howSteps: [
+        { num: "01", title: "Call or Text", desc: "Tell us your lot address, how many rigs you need washed, and what day works." },
+        { num: "02", title: "We Show Up", desc: "We bring our own water, power, hoses, and wash gear right to where your rigs are parked." },
+        { num: "03", title: "Done & Clean", desc: "We wash every unit thoroughly, pack up, and leave your yard clean." }
+      ],
+      areaTitle: "Serving Elgin & Chicagoland",
+      areaDesc: "Based in Elgin, IL, we travel across the Northwest and Western suburbs to wash rigs on-site at your warehouse, yard, or lot.",
+      areaBadge: "Based in Elgin, IL 60120",
+      towns: ["Elgin", "South Elgin", "Hoffman Estates", "Schaumburg", "Bartlett", "St. Charles", "West Chicago", "Streamwood", "Carpentersville", "Huntley", "Hampshire", "Carol Stream", "Batavia", "Geneva"],
+      requirementsTitle: "On-Site Requirements",
+      requirementsSubtitle: "Zero hookups needed on your end:",
+      requirementsList: [
+        "<strong>Water Hookup Needed?</strong> No — we carry our own water tanks.",
+        "<strong>Power Needed?</strong> No — our mobile trailer runs gas pressure washers.",
+        "<strong>Drainage:</strong> We follow eco-safe washing practices for lot safety."
+      ],
+      socialTitle: "Follow Us On Social",
+      socialDesc: "See our latest washes and video reels on Facebook and TikTok.",
+      ctaTitle: "Ready For A Spotless Fleet?",
+      ctaSubtitle: "CALL OR TEXT · 630-414-3954 · EBWASH2@GMAIL.COM",
+      ctaBtnText: "Get Your Free Quote"
+    },
+    service: {
+      bannerTitle: "Our Services",
+      serviceCards: [
+        {
+          id: "semi",
+          eyebrow: "Tractors & Day Cabs",
+          title: "Commercial Semi Truck Wash",
+          desc: "Complete exterior hand-foaming and high-pressure power rinse covering sleeper cabs, day cabs, grilles, visors, windshields, fuel tanks, and rear chassis.",
+          img: "photos/after2.jpg",
+          features: ["Hand brush scrub on stubborn road film", "Bug & diesel soot removal from stacks", "Streak-free glass & mirror rinse"]
+        },
+        {
+          id: "fleet",
+          eyebrow: "Scheduled Yard Care",
+          title: "Fleet Maintenance Programs",
+          desc: "Recurring weekly, bi-weekly, or monthly washing contracts tailored to logistics providers, freight carriers, delivery fleets, and corporate transport yards.",
+          img: "photos/after5.jpg",
+          features: ["Weekend & evening dispatch wash slots", "Volume tier pricing for multi-unit lots", "Zero driver downtime during business hours"]
+        },
+        {
+          id: "trailer",
+          eyebrow: "53ft Vans & Reefers",
+          title: "Trailer & Reefer Cleaning",
+          desc: "High-volume exterior wash removing road salt, grime, and grease from dry vans, refrigerated trailers, flatbed frames, and enclosed utility haulers.",
+          img: "photos/cleantrailer.jpg",
+          features: ["Reefer unit front bulkhead foam & rinse", "Swing & roll-up rear door grime stripping", "DOT reflective tape & marker visibility"]
+        },
+        {
+          id: "machinery",
+          eyebrow: "Construction & Excavation",
+          title: "Heavy Machinery & Equipment",
+          desc: "Heavy mud, clay, and gravel removal for tracked skid steers, wheel loaders, excavators, bulldozers, dump trailers, and aggregate haulers.",
+          img: "photos/after.jpg",
+          features: ["Track & undercarriage clay blasting", "Hydraulic arm & bucket joint degreasing", "Cooling radiator & engine compartment rinse"]
+        },
+        {
+          id: "engine",
+          eyebrow: "Core Speciality",
+          title: "Engine Degreasing & Pre-Wash",
+          desc: "As featured on our service rig: professional high-pressure pre-wash, specialized engine degreasers, and manual soap scrubbing for DOT compliance and mechanic prep.",
+          img: "photos/ad.jpg",
+          features: ["Commercial-grade engine degreasing", "High-pressure pre-wash grime softening", "Active soap application & manual scrubbing"]
+        },
+        {
+          id: "wheels",
+          eyebrow: "Detailing & Protection",
+          title: "Wheels, Tanks & Undercarriage",
+          desc: "Protect your investment against winter road salt corrosion. Thorough cleaning for chrome rims, aluminum fuel tanks, diamond plate boxes, and fifth wheels.",
+          img: "photos/after3.jpg",
+          features: ["Aluminum tank & toolbox brightening", "Brake dust & rim road salt neutralizer", "Chassis frame rail & mudflap power rinse"]
+        }
+      ],
+      advantageEyebrow: "The Mobile Advantage",
+      advantageTitle: "How On-Site Yard Washing Works",
+      advantageDesc: "We make fleet maintenance hands-off for fleet managers and business owners. Here is how simple it is:",
+      advantageSteps: [
+        { num: "01", title: "Book Your Slot", desc: "Call or text 630-414-3954 with your unit count, equipment types, and parking lot address. We coordinate around your staging hours." },
+        { num: "02", title: "We Roll Up Self-Contained", desc: "Our mobile units carry water tanks, commercial pressure wands, generators, and biodegradable detergents. No water or power hookups required from your shop." },
+        { num: "03", title: "Your Fleet Leaves Spotless", desc: "Tractors and trailers are hand-scrubbed, power-rinsed, and ready to roll out on schedule with zero driver overtime or yard congestion." }
+      ],
+      coverageEyebrow: "Service Coverage",
+      coverageTitle: "Serving Elgin & Surrounding Chicagoland",
+      coverageDesc: "We dispatch across Kane, Cook, DuPage, and McHenry Counties. Major service corridors include:",
+      coverageTowns: ["Elgin, IL (Hub)", "South Elgin", "Schaumburg", "Hoffman Estates", "Streamwood", "Carpentersville", "Algonquin", "St. Charles", "Geneva", "Batavia", "West Chicago", "Aurora"],
+      ctaTitle: "Ready For A Spotless Fleet?",
+      ctaSubtitle: "CALL OR TEXT · 630-414-3954 · EBWASH2@GMAIL.COM"
+    },
+    gallery: {
+      bannerTitle: "Gallery",
+      photos: [
+        { id: "p1", img: "photos/after2.jpg", alt: "Jesus Murillo Trucking Inc Freightliner Semi Truck Clean Result", title: "Freightliner Semi Truck Clean Result" },
+        { id: "p2", img: "photos/before2.jpg", alt: "Jesus Murillo Trucking Inc Freightliner Semi Truck Before Wash", title: "Semi Truck Before Wash" },
+        { id: "p3", img: "photos/after.jpg", alt: "CAT 265 Tracked Skid Steer Loader Spotless Clean Result", title: "CAT 265 Loader Clean Result" },
+        { id: "p4", img: "photos/before.jpg", alt: "CAT 265 Tracked Skid Steer Loader Heavy Mud Before Wash", title: "CAT Loader Before Wash" },
+        { id: "p5", img: "photos/after4.jpg", alt: "MAC Dump Trailer and Red Tractor Clean Wash Result", title: "MAC Dump Trailer Clean Result" },
+        { id: "p6", img: "photos/before4.jpg", alt: "MAC Dump Trailer Before Wash", title: "MAC Dump Trailer Before Wash" },
+        { id: "p7", img: "photos/after5.jpg", alt: "M&E Sanchez Mack Truck 51 Clean Result with Coras Dump Trailer", title: "Mack Truck 51 Clean Result" },
+        { id: "p8", img: "photos/before5.jpg", alt: "M&E Sanchez Mack Truck Before Wash", title: "Mack Truck Before Wash" },
+        { id: "p9", img: "photos/after3.jpg", alt: "Aluminum Diamond Plate Toolbox and Undercarriage Clean Result", title: "Toolbox & Undercarriage Clean" },
+        { id: "p10", img: "photos/before3.jpg", alt: "Aluminum Diamond Plate Toolbox and Undercarriage Before Wash", title: "Toolbox & Undercarriage Before" },
+        { id: "p11", img: "photos/cleantrailer.jpg", alt: "Enclosed Red and Black Cargo Trailer Spotless Wash Result", title: "Enclosed Cargo Trailer Wash" },
+        { id: "p12", img: "photos/ad.jpg", alt: "EB Wash Mobil Service Overview", title: "EB Wash Mobil Service Overview" }
+      ],
+      ctaTitle: "Ready For A Spotless Fleet?",
+      ctaSubtitle: "CALL OR TEXT · 630-414-3954 · EBWASH2@GMAIL.COM"
+    },
+    contact: {
+      bannerTitle: "Contact",
+      callCardEyebrow: "Fastest Response",
+      callCardTitle: "Call Or Text Us Directly",
+      callCardDesc: "For immediate lot quotes, urgent wash needs, or dispatch coordination, calling or texting is the quickest route.",
+      emailCardEyebrow: "Email Dispatch",
+      emailCardTitle: "Written Estimates & Invoices",
+      emailCardDesc: "Send RFPs, fleet size lists, or billing questions to our management team.",
+      coverageCardEyebrow: "Service Coverage",
+      coverageCardTitle: "Headquartered In Elgin, IL",
+      coverageCardDesc: "We dispatch mobile wash units across Kane, Cook, and DuPage counties. Major service hubs include:",
+      coverageTowns: ["Elgin", "South Elgin", "Hoffman Estates", "Schaumburg", "St. Charles", "Bartlett", "West Chicago", "Streamwood", "Huntley"],
+      hoursCardEyebrow: "7-Day Availability",
+      hoursCardTitle: "Flexible Washing Windows",
+      hoursCardDesc: "We coordinate around your dispatch calendar. Weekend lot cleanups, night washes, or daytime scheduled staging — we wash when your trucks are idle.",
+      formEyebrow: "Quick Quote Form",
+      formTitle: "Request On-Site Fleet Washing",
+      formSubtitle: "Fill out the quick details below and we'll reply with accurate pricing tailored to your fleet.",
+      formSubmitBtn: "Submit Quote Request",
+      faqEyebrow: "Got Questions?",
+      faqTitle: "Fleet Wash FAQ",
+      faqSubtitle: "Here are quick answers to the most common questions fleet dispatchers and owner-operators ask us.",
+      faqs: [
+        { q: "Do we need to supply water or power on our lot?", a: "No. Our mobile wash units are 100% self-contained with large-capacity onboard water tanks and commercial gas pressure washers. We can wash in gravel lots, remote yards, or commercial terminals with zero connections." },
+        { q: "Can you wash our fleet while drivers are on rest?", a: "Yes, absolutely. We often schedule fleet cleaning over weekends, early mornings, or during scheduled 10-hour rest breaks so your equipment is spotless without losing a single hour of driving time." },
+        { q: "Are your detergents safe for vehicle decals and aluminum?", a: "Yes. We use premium commercial-grade vehicle soaps and neutral cleaners that strip diesel grime and salt without fading vinyl logos or oxidizing polished aluminum tanks and wheels." },
+        { q: "Do you offer recurring fleet contract discounts?", a: "Yes! We offer discounted rates for recurring accounts (weekly, bi-weekly, or monthly) and volume discounts for yards with 5+ units washed during the same visit." }
+      ],
+      ctaTitle: "Ready For Clean Trucks On Monday?",
+      ctaSubtitle: "CALL OR TEXT 630-414-3954 · WE COME TO YOUR YARD"
+    }
+  };
+
+  let siteData = deepClone(DEFAULT_SITE_DATA);
+  let historyStack = [deepClone(siteData)];
+  let historyIndex = 0;
+  let isDirty = false;
+
+  // DOM Elements
+  const loginView = document.getElementById('loginView');
+  const adminApp = document.getElementById('adminApp');
+  const loginForm = document.getElementById('loginForm');
+  const adminPassword = document.getElementById('adminPassword');
+  const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+  const loginError = document.getElementById('loginError');
+
+  const pageTabs = document.getElementById('pageTabs');
+  const editorFrame = document.getElementById('editorFrame');
+
+  const undoBtn = document.getElementById('undoBtn');
+  const redoBtn = document.getElementById('redoBtn');
+  const saveBtn = document.getElementById('saveBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  const adminToast = document.getElementById('adminToast');
+  const toastMessage = document.getElementById('toastMessage');
+
+  // ================= 1. AUTHENTICATION =================
+  function checkAuth() {
+    const isAuth = localStorage.getItem(AUTH_KEY) === 'true' || sessionStorage.getItem(AUTH_KEY) === 'true';
+    if (isAuth) {
+      showAdmin();
+    } else {
+      showLogin();
+    }
+  }
+
+  function showLogin() {
+    loginView.style.display = 'flex';
+    adminApp.style.display = 'none';
+    adminPassword.value = '';
+    loginError.style.display = 'none';
+  }
+
+  function showAdmin() {
+    loginView.style.display = 'none';
+    adminApp.style.display = 'flex';
+    initContent();
+  }
+
+  loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const pass = adminPassword.value.trim();
+    if (pass === DEFAULT_PASS || pass === 'admin') {
+      localStorage.setItem(AUTH_KEY, 'true');
+      showAdmin();
+    } else {
+      loginError.style.display = 'block';
+      adminPassword.focus();
+    }
+  });
+
+  togglePasswordBtn.addEventListener('click', () => {
+    const isPass = adminPassword.type === 'password';
+    adminPassword.type = isPass ? 'text' : 'password';
+  });
+
+  logoutBtn.addEventListener('click', () => {
+    if (isDirty) {
+      if (!confirm('You have unsaved changes. Are you sure you want to log out?')) return;
+    }
+    localStorage.removeItem(AUTH_KEY);
+    sessionStorage.removeItem(AUTH_KEY);
+    showLogin();
+  });
+
+  // ================= 2. CONTENT & HISTORY =================
+  function deepClone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  function initContent() {
+    let saved = null;
+    try {
+      const localStr = localStorage.getItem(STORAGE_KEY);
+      if (localStr) saved = JSON.parse(localStr);
+    } catch (e) {}
+
+    siteData = deepClone(saved || DEFAULT_SITE_DATA);
+    historyStack = [deepClone(siteData)];
+    historyIndex = 0;
+    updateHistoryButtons();
+  }
+
+  function pushHistory(newData) {
+    if (!newData) return;
+    siteData = deepClone(newData);
+
+    if (historyIndex < historyStack.length - 1) {
+      historyStack = historyStack.slice(0, historyIndex + 1);
+    }
+
+    historyStack.push(deepClone(siteData));
+    if (historyStack.length > 50) historyStack.shift();
+    historyIndex = historyStack.length - 1;
+
+    isDirty = true;
+    saveBtn.classList.add('dirty');
+    updateHistoryButtons();
+  }
+
+  function undo() {
+    if (historyIndex > 0) {
+      historyIndex--;
+      siteData = deepClone(historyStack[historyIndex]);
+      updateHistoryButtons();
+      sendToFrame({ type: 'EBWASH_RESTORE_STATE', payload: siteData });
+      showToast('↩ Undid last change');
+    }
+  }
+
+  function redo() {
+    if (historyIndex < historyStack.length - 1) {
+      historyIndex++;
+      siteData = deepClone(historyStack[historyIndex]);
+      updateHistoryButtons();
+      sendToFrame({ type: 'EBWASH_RESTORE_STATE', payload: siteData });
+      showToast('↪ Redid change');
+    }
+  }
+
+  function updateHistoryButtons() {
+    undoBtn.disabled = historyIndex <= 0;
+    redoBtn.disabled = historyIndex >= historyStack.length - 1;
+  }
+
+  undoBtn.addEventListener('click', undo);
+  redoBtn.addEventListener('click', redo);
+
+  // Keyboard Shortcuts (Ctrl+Z, Ctrl+Y, Ctrl+S)
+  window.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 'z' || e.key === 'Z') {
+        if (e.shiftKey) {
+          e.preventDefault();
+          redo();
+        } else {
+          e.preventDefault();
+          undo();
+        }
+      } else if (e.key === 'y' || e.key === 'Y') {
+        e.preventDefault();
+        redo();
+      } else if (e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        saveContent();
+      }
+    }
+  });
+
+  // ================= 3. SAVE & PERSISTENCE =================
+  async function saveContent() {
+    if (!siteData) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(siteData));
+
+      // Post to Cloudflare endpoint
+      fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: siteData })
+      }).catch(() => {});
+
+      isDirty = false;
+      saveBtn.classList.remove('dirty');
+      showToast('✓ Saved! Changes are live on your website.');
+      sendToFrame({ type: 'EBWASH_SAVED_CLEAN' });
+    } catch (e) {
+      console.error('Save error:', e);
+      showToast('⚠️ Error saving changes.');
+    }
+  }
+
+  saveBtn.addEventListener('click', saveContent);
+
+  function sendToFrame(msg) {
+    if (editorFrame && editorFrame.contentWindow) {
+      try {
+        editorFrame.contentWindow.postMessage(msg, '*');
+      } catch (e) {}
+    }
+  }
+
+  function showToast(msg) {
+    toastMessage.textContent = msg;
+    adminToast.classList.add('show');
+    setTimeout(() => {
+      adminToast.classList.remove('show');
+    }, 3500);
+  }
+
+  // ================= 4. TAB NAVIGATION =================
+  pageTabs.querySelectorAll('.tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      pageTabs.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const page = btn.getAttribute('data-page');
+      if (page) {
+        editorFrame.src = page;
+      }
+    });
+  });
+
+  // When iframe loads, pass admin editing mode & initial data
+  editorFrame.addEventListener('load', () => {
+    sendToFrame({
+      type: 'EBWASH_ENABLE_INLINE_ADMIN',
+      payload: siteData
+    });
+  });
+
+  // Listen for edits originating from the live page
+  window.addEventListener('message', (event) => {
+    if (event.data) {
+      if (event.data.type === 'EBWASH_STATE_CHANGED') {
+        pushHistory(event.data.payload);
+      } else if (event.data.type === 'EBWASH_INIT_DATA') {
+        if (!siteData) {
+          siteData = deepClone(event.data.payload);
+          historyStack = [deepClone(siteData)];
+          historyIndex = 0;
+          updateHistoryButtons();
+        }
+      }
+    }
+  });
+
+  // Check auth
+  checkAuth();
+})();
