@@ -5,10 +5,9 @@
 
 (function () {
   const STORAGE_KEY = 'ebwash_content';
-  const AUTH_KEY = 'ebwash_admin_auth';
   const isInIframe = window.self !== window.top;
-  const isDirectAdmin = localStorage.getItem(AUTH_KEY) === 'true';
-  const isEditorActive = isInIframe || isDirectAdmin;
+  // ONLY activate editing mode when loaded inside the admin.html portal iframe
+  const isEditorActive = isInIframe;
 
   if (isEditorActive) {
     window.EBWASH_ADMIN_ACTIVE = true;
