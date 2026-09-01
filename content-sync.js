@@ -1,11 +1,18 @@
 /**
  * EB Wash Mobil LLC - Visual Direct On-Page Inline CMS Engine
- * Enables live on-page typing, drag-and-drop photo reordering, and direct image swapping.
+ * Enables live on-page typing, drag-and-drop photo reordering, and direct image swapping on Desktop & Mobile.
  */
 
 (function () {
   const STORAGE_KEY = 'ebwash_content';
+  const AUTH_KEY = 'ebwash_admin_auth';
   const isInIframe = window.self !== window.top;
+  const isDirectAdmin = localStorage.getItem(AUTH_KEY) === 'true';
+  const isEditorActive = isInIframe || isDirectAdmin;
+
+  if (isEditorActive) {
+    window.EBWASH_ADMIN_ACTIVE = true;
+  }
 
   // Embedded Default Site Data
   const DEFAULT_SITE_DATA = {
@@ -209,6 +216,11 @@
   }
 
   function notifyStateChange() {
+    // Save to localStorage immediately so changes persist across all tabs
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(siteData));
+    } catch (e) {}
+
     if (isInIframe) {
       window.parent.postMessage({ type: 'EBWASH_STATE_CHANGED', payload: siteData }, '*');
     }
@@ -220,7 +232,6 @@
       siteData = deepClone(data);
     }
 
-    // Ensure siteData has full schema
     if (!siteData.global) siteData.global = deepClone(DEFAULT_SITE_DATA.global);
     if (!siteData.home) siteData.home = deepClone(DEFAULT_SITE_DATA.home);
     if (!siteData.service) siteData.service = deepClone(DEFAULT_SITE_DATA.service);
@@ -283,19 +294,19 @@
       renderFaqGrid(faqGrid, siteData.contact.faqs);
     }
 
-    // Initialize visual admin overlays if inside editor
-    if (isInIframe) {
+    // Initialize visual admin overlays if in editor mode
+    if (isEditorActive) {
       enableVisualAdmin();
     }
   }
 
-  // ================= 2. GALLERY RENDERING (WITH TOP TOOLBAR & DRAG-AND-DROP) =================
+  // ================= 2. GALLERY RENDERING (WITH VISIBLE BUTTONS & DRAG/DROP) =================
   function renderGalleryGrid(container, photos) {
     if (!photos) return;
     container.innerHTML = '';
 
     // If in admin mode, inject the "➕ Add New Photo" banner at top of gallery
-    if (isInIframe) {
+    if (isEditorActive) {
       let addBanner = document.getElementById('eb-gallery-add-card');
       if (!addBanner) {
         addBanner = document.createElement('div');
@@ -307,7 +318,9 @@
             <span>Add New Photo To Gallery</span>
           </button>
         `;
-        addBanner.querySelector('button').addEventListener('click', () => {
+        addBanner.querySelector('button').addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
           openImagePicker((newImgSrc) => {
             if (!siteData.gallery) siteData.gallery = { photos: [] };
             if (!Array.isArray(siteData.gallery.photos)) siteData.gallery.photos = [];
@@ -330,10 +343,10 @@
     photos.forEach((photo, idx) => {
       const card = document.createElement('div');
       card.className = 'pure-photo-card in eb-editable-photo-card';
-      card.setAttribute('title', photo.title || 'Click to view photo');
+      card.setAttribute('title', photo.title || 'EB Wash Mobil');
       card.dataset.index = idx;
 
-      if (isInIframe) {
+      if (isEditorActive) {
         card.setAttribute('draggable', 'true');
 
         // Drag and Drop reordering
@@ -378,8 +391,8 @@
         </div>
       `;
 
-      // In admin mode, inject floating photo controls AT THE TOP of each photo
-      if (isInIframe) {
+      // In admin mode, inject floating photo controls AT THE TOP of each photo (ALWAYS VISIBLE)
+      if (isEditorActive) {
         const toolbar = document.createElement('div');
         toolbar.className = 'eb-photo-toolbar-top';
         toolbar.innerHTML = `
@@ -399,6 +412,7 @@
         // Swap Image
         toolbar.querySelector('.eb-btn-swap').addEventListener('click', (e) => {
           e.stopPropagation();
+          e.preventDefault();
           openImagePicker((newSrc) => {
             photo.img = newSrc;
             card.querySelector('img').src = newSrc;
@@ -409,6 +423,7 @@
         // Delete Photo
         toolbar.querySelector('.eb-btn-delete').addEventListener('click', (e) => {
           e.stopPropagation();
+          e.preventDefault();
           if (confirm('Are you sure you want to delete this photo from the gallery?')) {
             siteData.gallery.photos.splice(idx, 1);
             applyContent(siteData);
@@ -419,6 +434,7 @@
         // Move Left
         toolbar.querySelector('.eb-btn-left').addEventListener('click', (e) => {
           e.stopPropagation();
+          e.preventDefault();
           if (idx > 0) {
             const temp = siteData.gallery.photos[idx - 1];
             siteData.gallery.photos[idx - 1] = siteData.gallery.photos[idx];
@@ -431,6 +447,7 @@
         // Move Right
         toolbar.querySelector('.eb-btn-right').addEventListener('click', (e) => {
           e.stopPropagation();
+          e.preventDefault();
           if (idx < siteData.gallery.photos.length - 1) {
             const temp = siteData.gallery.photos[idx + 1];
             siteData.gallery.photos[idx + 1] = siteData.gallery.photos[idx];
@@ -441,20 +458,6 @@
         });
 
         card.appendChild(toolbar);
-      } else {
-        // Lightbox in public view
-        card.addEventListener('click', () => {
-          const modal = document.getElementById('galleryLightbox');
-          const modalImg = document.getElementById('lightboxImg');
-          const modalTitle = document.getElementById('lightboxTitle');
-          if (modal && modalImg) {
-            modalImg.src = photo.img;
-            modalImg.alt = photo.alt || 'EB Wash Mobil';
-            if (modalTitle) modalTitle.textContent = photo.title || 'EB Wash Mobil Fleet Service';
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-          }
-        });
       }
 
       container.appendChild(card);
@@ -506,186 +509,197 @@
 
   // ================= 3. DIRECT VISUAL INLINE EDITING ENGINE =================
   function enableVisualAdmin() {
-    if (!isInIframe) return;
+    if (!isEditorActive) return;
 
-    // Inject Visual Admin CSS styles with OBVIOUS borders & TOP photo toolbars
+    // Inject Visual Admin CSS styles with PERMANENTLY VISIBLE toolbars on touch & desktop
     if (!document.getElementById('eb-visual-admin-styles')) {
       const style = document.createElement('style');
       style.id = 'eb-visual-admin-styles';
       style.textContent = `
         /* High-visibility editable text borders */
         [data-cms] {
-          outline: 2px dashed rgba(255, 199, 44, 0.75) !important;
+          outline: 2px dashed rgba(255, 199, 44, 0.8) !important;
           outline-offset: 4px !important;
-          background-color: rgba(255, 199, 44, 0.06) !important;
+          background-color: rgba(255, 199, 44, 0.08) !important;
           cursor: text !important;
           transition: all 0.2s ease !important;
           border-radius: 4px !important;
           min-height: 1.2em;
           display: inline-block;
+          -webkit-user-modify: read-write-plaintext-only;
         }
-        [data-cms]:hover {
+        [data-cms]:hover, [data-cms]:active {
           outline: 2.5px solid #ffc72c !important;
-          background-color: rgba(255, 199, 44, 0.18) !important;
-          box-shadow: 0 0 12px rgba(255, 199, 44, 0.35) !important;
+          background-color: rgba(255, 199, 44, 0.2) !important;
+          box-shadow: 0 0 12px rgba(255, 199, 44, 0.4) !important;
         }
         [data-cms]:focus {
           outline: 3px solid #ffc72c !important;
-          background-color: rgba(255, 199, 44, 0.24) !important;
+          background-color: rgba(255, 199, 44, 0.26) !important;
           box-shadow: 0 0 18px rgba(255, 199, 44, 0.6) !important;
         }
         [data-cms].eb-modified {
           outline: 2.5px solid #ff9f1a !important;
-          background-color: rgba(255, 159, 26, 0.2) !important;
+          background-color: rgba(255, 159, 26, 0.25) !important;
         }
 
-        /* Image hover overlays */
+        /* Image change button (Always visible on photos) */
         .eb-image-container, .service-detail-img, .hero-media {
           position: relative !important;
         }
         .eb-img-change-btn {
-          position: absolute;
-          top: 14px;
-          right: 14px;
-          background: rgba(17, 19, 23, 0.95);
-          border: 1.5px solid #ffc72c;
-          color: #ffc72c;
-          font-family: 'Work Sans', sans-serif;
-          font-size: 0.82rem;
-          font-weight: 700;
-          padding: 8px 14px;
-          border-radius: 6px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          box-shadow: 0 4px 14px rgba(0,0,0,0.7);
-          transition: all 0.2s;
-          z-index: 50;
+          position: absolute !important;
+          top: 10px !important;
+          right: 10px !important;
+          background: rgba(17, 19, 23, 0.95) !important;
+          border: 1.5px solid #ffc72c !important;
+          color: #ffc72c !important;
+          font-family: 'Work Sans', sans-serif !important;
+          font-size: 0.82rem !important;
+          font-weight: 700 !important;
+          padding: 8px 14px !important;
+          border-radius: 6px !important;
+          cursor: pointer !important;
+          display: flex !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          align-items: center !important;
+          gap: 6px !important;
+          box-shadow: 0 4px 14px rgba(0,0,0,0.8) !important;
+          transition: all 0.2s !important;
+          z-index: 100 !important;
+          pointer-events: auto !important;
         }
-        .eb-img-change-btn:hover {
-          background: #ffc72c;
-          color: #000;
-          transform: scale(1.04);
+        .eb-img-change-btn:hover, .eb-img-change-btn:active {
+          background: #ffc72c !important;
+          color: #000 !important;
+          transform: scale(1.04) !important;
         }
 
         /* Gallery Manager Top Banner */
         .eb-admin-add-photo-banner {
-          width: 100%;
-          text-align: center;
-          margin-bottom: 28px;
+          width: 100% !important;
+          text-align: center !important;
+          margin-bottom: 24px !important;
+          display: block !important;
         }
         .eb-add-photo-btn {
-          background: rgba(255, 199, 44, 0.12);
-          border: 2px dashed #ffc72c;
-          color: #ffc72c;
-          font-family: 'Oswald', sans-serif;
-          font-size: 1.15rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.8px;
-          padding: 16px 32px;
-          border-radius: 10px;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          transition: all 0.2s;
+          background: rgba(255, 199, 44, 0.15) !important;
+          border: 2px dashed #ffc72c !important;
+          color: #ffc72c !important;
+          font-family: 'Oswald', sans-serif !important;
+          font-size: 1.15rem !important;
+          font-weight: 700 !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.8px !important;
+          padding: 16px 32px !important;
+          border-radius: 10px !important;
+          cursor: pointer !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 10px !important;
+          transition: all 0.2s !important;
+          -webkit-tap-highlight-color: transparent !important;
         }
-        .eb-add-photo-btn:hover {
-          background: #ffc72c;
-          color: #000;
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(255, 199, 44, 0.4);
+        .eb-add-photo-btn:hover, .eb-add-photo-btn:active {
+          background: #ffc72c !important;
+          color: #000 !important;
+          transform: translateY(-2px) !important;
+          box-shadow: 0 6px 20px rgba(255, 199, 44, 0.4) !important;
         }
 
         /* Gallery Card Styles */
         .eb-editable-photo-card {
           position: relative !important;
+          overflow: visible !important;
+        }
+        .eb-editable-photo-card .gallery-zoom-hint {
+          display: none !important;
         }
         .eb-editable-photo-card.eb-dragging {
-          opacity: 0.35;
+          opacity: 0.35 !important;
           border: 2px dashed #ffc72c !important;
         }
         .eb-editable-photo-card.eb-drag-over {
-          transform: scale(1.03);
-          box-shadow: 0 0 20px rgba(255, 199, 44, 0.7);
+          transform: scale(1.03) !important;
+          box-shadow: 0 0 20px rgba(255, 199, 44, 0.7) !important;
         }
 
-        /* Gallery Toolbar AT THE TOP OF EACH IMAGE */
+        /* Gallery Toolbar AT THE TOP OF EACH IMAGE (ALWAYS 100% VISIBLE ON MOBILE & DESKTOP) */
         .eb-photo-toolbar-top {
-          position: absolute;
-          top: 10px;
-          left: 10px;
-          right: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          background: rgba(10, 11, 13, 0.94);
-          border: 1px solid #3b4252;
-          border-radius: 6px;
-          padding: 6px 8px;
-          z-index: 50;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.8);
+          position: absolute !important;
+          top: 8px !important;
+          left: 8px !important;
+          right: 8px !important;
+          display: flex !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          background: rgba(10, 11, 13, 0.95) !important;
+          border: 1.5px solid #ffc72c !important;
+          border-radius: 6px !important;
+          padding: 6px 8px !important;
+          z-index: 9999 !important;
+          pointer-events: auto !important;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.85) !important;
         }
         .eb-tb-btn {
-          background: #20242d;
-          border: 1px solid #475266;
-          color: #fff;
-          font-size: 0.75rem;
-          font-weight: 700;
-          padding: 5px 9px;
-          border-radius: 4px;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          transition: all 0.15s;
+          background: #20242d !important;
+          border: 1px solid #475266 !important;
+          color: #fff !important;
+          font-size: 0.75rem !important;
+          font-weight: 700 !important;
+          padding: 6px 10px !important;
+          border-radius: 4px !important;
+          cursor: pointer !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 4px !important;
+          transition: all 0.15s !important;
+          pointer-events: auto !important;
+          -webkit-tap-highlight-color: transparent !important;
         }
-        .eb-tb-btn:hover:not(:disabled) {
-          background: #ffc72c;
-          color: #000;
-          border-color: #ffc72c;
+        .eb-tb-btn:hover:not(:disabled), .eb-tb-btn:active:not(:disabled) {
+          background: #ffc72c !important;
+          color: #000 !important;
+          border-color: #ffc72c !important;
         }
         .eb-tb-btn:disabled {
-          opacity: 0.3;
-          cursor: not-allowed;
+          opacity: 0.3 !important;
+          cursor: not-allowed !important;
         }
         .eb-btn-delete {
           background: rgba(255, 71, 87, 0.25) !important;
           border-color: #ff4757 !important;
           color: #ff7675 !important;
         }
-        .eb-btn-delete:hover {
+        .eb-btn-delete:hover, .eb-btn-delete:active {
           background: #ff4757 !important;
           color: #fff !important;
         }
         .eb-tb-group {
-          display: flex;
-          gap: 5px;
+          display: flex !important;
+          gap: 4px !important;
         }
 
         /* Mobile specific touch optimizations */
         @media (max-width: 600px) {
           .eb-photo-toolbar-top {
-            top: 6px;
-            left: 6px;
-            right: 6px;
-            padding: 4px 6px;
+            top: 6px !important;
+            left: 6px !important;
+            right: 6px !important;
+            padding: 5px 6px !important;
           }
           .eb-tb-btn {
-            padding: 5px 8px;
-            font-size: 0.75rem;
+            padding: 6px 8px !important;
+            font-size: 0.74rem !important;
           }
           .eb-add-photo-btn {
-            width: 100%;
-            padding: 14px 16px;
-            font-size: 1rem;
-            justify-content: center;
-          }
-          [data-cms] {
-            outline-width: 2px !important;
-            outline-offset: 2px !important;
+            width: 100% !important;
+            padding: 14px 16px !important;
+            font-size: 1rem !important;
+            justify-content: center !important;
           }
         }
       `;
@@ -832,7 +846,7 @@
 
     applyContent(loadedData || DEFAULT_SITE_DATA);
 
-    // Discreet Admin link for regular view
+    // Discreet Admin link in footer
     if (!isInIframe) {
       const footerBottom = document.querySelector('.footer-bottom');
       if (footerBottom && !document.getElementById('eb-admin-footer-link')) {

@@ -409,16 +409,14 @@
   </div>
 </footer>
 
-<!-- Lightbox Modal for Photo Zooming -->
+<!-- Lightbox Modal for Photo Zooming (Clean Image with Previous/Next Arrows) -->
 <div class="lightbox-modal" id="galleryLightbox" role="dialog" aria-modal="true">
   <div class="lightbox-content">
     <button class="lightbox-close" id="lightboxClose" aria-label="Close Lightbox">&times;</button>
+    <button class="lightbox-arrow lightbox-prev" id="lightboxPrev" aria-label="Previous Photo">&#10094;</button>
+    <button class="lightbox-arrow lightbox-next" id="lightboxNext" aria-label="Next Photo">&#10095;</button>
     <div class="lightbox-img-wrap">
       <img id="lightboxImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" alt="Zoomed Fleet Photo">
-    </div>
-    <div class="lightbox-caption">
-      <h3 id="lightboxTitle">EB Wash Mobil Service</h3>
-      <a class="btn btn-hazard btn-sm" href="contact.html">Request This Service</a>
     </div>
   </div>
 </div>

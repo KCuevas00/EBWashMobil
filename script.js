@@ -130,17 +130,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ---------- Gallery Lightbox Modal ----------
+  // ---------- Gallery Lightbox Modal (Clean with Previous/Next Arrows) ----------
   const lightbox = document.getElementById('galleryLightbox');
   const lightboxImg = document.getElementById('lightboxImg');
-  const lightboxTitle = document.getElementById('lightboxTitle');
   const lightboxClose = document.getElementById('lightboxClose');
+  const lightboxPrev = document.getElementById('lightboxPrev');
+  const lightboxNext = document.getElementById('lightboxNext');
 
   if (lightbox && lightboxImg) {
-    const openLightbox = (src, title) => {
+    let currentPhotoIndex = 0;
+    let photoList = [];
+
+    const getActivePhotos = () => {
+      const cards = Array.from(document.querySelectorAll('.pure-photo-card img, .gallery-item img'));
+      return cards.map((img) => img.src).filter(Boolean);
+    };
+
+    const updateLightboxPhoto = (index) => {
+      photoList = getActivePhotos();
+      if (!photoList.length) return;
+      if (index < 0) index = photoList.length - 1;
+      if (index >= photoList.length) index = 0;
+      currentPhotoIndex = index;
+      lightboxImg.src = photoList[currentPhotoIndex];
+    };
+
+    const openLightbox = (src) => {
+      if (window.self !== window.top || window.EBWASH_ADMIN_ACTIVE) return; // Never open inside admin mode
+      photoList = getActivePhotos();
+      const idx = photoList.indexOf(src);
+      currentPhotoIndex = idx >= 0 ? idx : 0;
       lightboxImg.src = src;
-      lightboxImg.alt = title || 'EB Wash Mobil Rig Wash';
-      if (lightboxTitle) lightboxTitle.textContent = title || 'EB Wash Mobil On-Site Fleet Washing';
       lightbox.classList.add('active');
       document.body.style.overflow = 'hidden';
     };
@@ -153,31 +173,45 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 250);
     };
 
-    document.querySelectorAll('.gallery-item, .proof-photo, .pure-photo-card').forEach((item) => {
-      item.addEventListener('click', (e) => {
-        const img = item.querySelector('img');
-        const titleEl = item.querySelector('h3') || item.querySelector('.gallery-badge');
-        const title = titleEl ? titleEl.textContent : (img ? img.alt : 'EB Wash Mobil Fleet Wash');
-        if (img) {
-          openLightbox(img.src, title);
-        }
-      });
+    // Attach click listeners to gallery cards for public visitors
+    document.addEventListener('click', (e) => {
+      if (window.self !== window.top || window.EBWASH_ADMIN_ACTIVE) return;
+      const card = e.target.closest('.pure-photo-card, .gallery-item');
+      if (card && !e.target.closest('.eb-photo-toolbar-top, button, .eb-tb-btn')) {
+        const img = card.querySelector('img');
+        if (img && img.src) openLightbox(img.src);
+      }
     });
 
     if (lightboxClose) {
       lightboxClose.addEventListener('click', closeLightbox);
     }
 
+    if (lightboxPrev) {
+      lightboxPrev.addEventListener('click', (e) => {
+        e.stopPropagation();
+        updateLightboxPhoto(currentPhotoIndex - 1);
+      });
+    }
+
+    if (lightboxNext) {
+      lightboxNext.addEventListener('click', (e) => {
+        e.stopPropagation();
+        updateLightboxPhoto(currentPhotoIndex + 1);
+      });
+    }
+
     lightbox.addEventListener('click', (e) => {
-      if (e.target === lightbox) {
+      if (e.target === lightbox || e.target === lightboxImg.parentElement) {
         closeLightbox();
       }
     });
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && lightbox.classList.contains('active')) {
-        closeLightbox();
-      }
+      if (!lightbox.classList.contains('active')) return;
+      if (e.key === 'Escape') closeLightbox();
+      else if (e.key === 'ArrowLeft') updateLightboxPhoto(currentPhotoIndex - 1);
+      else if (e.key === 'ArrowRight') updateLightboxPhoto(currentPhotoIndex + 1);
     });
   }
 
