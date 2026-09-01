@@ -6,7 +6,7 @@
 (function () {
   const STORAGE_KEY = 'ebwash_content';
   const AUTH_KEY = 'ebwash_admin_auth';
-  const DEFAULT_PASS = 'ebwash2026';
+  const DEFAULT_PASS = 'cough2718artist';
 
   const DEFAULT_SITE_DATA = {
     global: {
@@ -236,7 +236,7 @@
   loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const pass = adminPassword.value.trim();
-    if (pass === DEFAULT_PASS || pass === 'admin') {
+    if (pass === DEFAULT_PASS) {
       localStorage.setItem(AUTH_KEY, 'true');
       showAdmin();
     } else {
