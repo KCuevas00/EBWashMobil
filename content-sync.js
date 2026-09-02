@@ -275,11 +275,15 @@
       }
     }
 
-    // Update Dynamic Gallery Grid
-    const galleryGrid = document.querySelector('.gallery-pure-photos .pure-photo-grid');
-    if (galleryGrid && siteData.gallery && Array.isArray(siteData.gallery.photos)) {
-      renderGalleryGrid(galleryGrid, siteData.gallery.photos);
-    }
+    // Update Dynamic Gallery Grids (Both Gallery Page & Homepage Preview)
+    const galleryGrids = document.querySelectorAll('.gallery-pure-photos .pure-photo-grid, #gallery .pure-photo-grid, .proof .pure-photo-grid');
+    galleryGrids.forEach((galleryGrid) => {
+      if (siteData.gallery && Array.isArray(siteData.gallery.photos)) {
+        const isHomePage = !!galleryGrid.closest('.proof, #gallery');
+        const photosToRender = isHomePage ? siteData.gallery.photos.slice(0, 6) : siteData.gallery.photos;
+        renderGalleryGrid(galleryGrid, photosToRender, isHomePage);
+      }
+    });
 
     // Update Dynamic Service Showcase Grid
     const serviceGrid = document.querySelector('.service-showcase-grid');
@@ -300,21 +304,20 @@
   }
 
   // ================= 2. GALLERY RENDERING (WITH VISIBLE BUTTONS & DRAG/DROP) =================
-  function renderGalleryGrid(container, photos) {
+  function renderGalleryGrid(container, photos, isHomePage = false) {
     if (!photos) return;
     container.innerHTML = '';
 
-    // If in admin mode, inject the "➕ Add New Photo" banner at top of gallery
+    // If in admin mode, inject the "➕ Add New Photo" banner at top of gallery grid
     if (isEditorActive) {
-      let addBanner = document.getElementById('eb-gallery-add-card');
+      let addBanner = container.parentElement.querySelector('.eb-admin-add-photo-banner');
       if (!addBanner) {
         addBanner = document.createElement('div');
-        addBanner.id = 'eb-gallery-add-card';
         addBanner.className = 'eb-admin-add-photo-banner';
         addBanner.innerHTML = `
           <button type="button" class="eb-add-photo-btn">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            <span>Add New Photo To Gallery</span>
+            <span>${isHomePage ? 'Add Photo To Work Gallery' : 'Add New Photo To Gallery'}</span>
           </button>
         `;
         addBanner.querySelector('button').addEventListener('click', (e) => {
