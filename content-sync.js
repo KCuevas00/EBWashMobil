@@ -317,7 +317,7 @@
         addBanner.innerHTML = `
           <button type="button" class="eb-add-photo-btn">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            <span>${isHomePage ? 'Add Photo To Work Gallery' : 'Add New Photo To Gallery'}</span>
+            <span>${isHomePage ? 'Agregar Foto a la Galería de Trabajos' : 'Agregar Nueva Foto a la Galería'}</span>
           </button>
         `;
         addBanner.querySelector('button').addEventListener('click', (e) => {
@@ -329,8 +329,8 @@
             siteData.gallery.photos.unshift({
               id: 'p' + Date.now(),
               img: newImgSrc,
-              title: 'EB Wash Mobil Fleet Clean Result',
-              alt: 'Commercial Fleet Wash Result'
+              title: 'Resultado de Lavado EB Wash Mobil',
+              alt: 'Lavado Profesional EB Wash Mobil'
             });
             applyContent(siteData);
             notifyStateChange();
@@ -398,14 +398,14 @@
         const toolbar = document.createElement('div');
         toolbar.className = 'eb-photo-toolbar-top';
         toolbar.innerHTML = `
-          <button type="button" class="eb-tb-btn eb-btn-swap" title="Upload & Swap Photo">
+          <button type="button" class="eb-tb-btn eb-btn-swap" title="Subir y cambiar foto">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <span>Change</span>
+            <span>Cambiar</span>
           </button>
           <div class="eb-tb-group">
-            <button type="button" class="eb-tb-btn eb-btn-left" title="Move Left" ${idx === 0 ? 'disabled' : ''}>◀</button>
-            <button type="button" class="eb-tb-btn eb-btn-right" title="Move Right" ${idx === photos.length - 1 ? 'disabled' : ''}>▶</button>
-            <button type="button" class="eb-tb-btn eb-btn-delete" title="Delete Photo">
+            <button type="button" class="eb-tb-btn eb-btn-left" title="Mover a la izquierda" ${idx === 0 ? 'disabled' : ''}>◀</button>
+            <button type="button" class="eb-tb-btn eb-btn-right" title="Mover a la derecha" ${idx === photos.length - 1 ? 'disabled' : ''}>▶</button>
+            <button type="button" class="eb-tb-btn eb-btn-delete" title="Eliminar foto">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
             </button>
           </div>
@@ -426,7 +426,7 @@
         toolbar.querySelector('.eb-btn-delete').addEventListener('click', (e) => {
           e.stopPropagation();
           e.preventDefault();
-          if (confirm('Are you sure you want to delete this photo from the gallery?')) {
+          if (confirm('¿Estás seguro de que deseas eliminar esta foto de la galería?')) {
             siteData.gallery.photos.splice(idx, 1);
             applyContent(siteData);
             notifyStateChange();
@@ -747,7 +747,7 @@
       btn.className = 'eb-img-change-btn';
       btn.innerHTML = `
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        <span>Change Photo</span>
+        <span>Cambiar Foto</span>
       `;
 
       btn.addEventListener('click', (e) => {
@@ -855,7 +855,7 @@
         const link = document.createElement('a');
         link.id = 'eb-admin-footer-link';
         link.href = 'admin.html';
-        link.textContent = 'Admin Portal';
+        link.textContent = 'Panel de Administrador';
         link.style.cssText = 'color: var(--fog-dim, #888); text-decoration: none; font-size: 0.8rem; margin-left: 14px; opacity: 0.7; transition: opacity 0.2s;';
         link.addEventListener('mouseenter', () => (link.style.opacity = '1'));
         link.addEventListener('mouseleave', () => (link.style.opacity = '0.7'));

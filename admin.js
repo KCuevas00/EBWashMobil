@@ -252,7 +252,7 @@
 
   logoutBtn.addEventListener('click', () => {
     if (isDirty) {
-      if (!confirm('You have unsaved changes. Are you sure you want to log out?')) return;
+      if (!confirm('Tienes cambios sin guardar. ¿Estás seguro de que deseas salir?')) return;
     }
     localStorage.removeItem(AUTH_KEY);
     sessionStorage.removeItem(AUTH_KEY);
@@ -300,7 +300,7 @@
       siteData = deepClone(historyStack[historyIndex]);
       updateHistoryButtons();
       sendToFrame({ type: 'EBWASH_RESTORE_STATE', payload: siteData });
-      showToast('↩ Undid last change');
+      showToast('↩ Se deshizo el último cambio');
     }
   }
 
@@ -310,7 +310,7 @@
       siteData = deepClone(historyStack[historyIndex]);
       updateHistoryButtons();
       sendToFrame({ type: 'EBWASH_RESTORE_STATE', payload: siteData });
-      showToast('↪ Redid change');
+      showToast('↪ Se rehizo el cambio');
     }
   }
 
@@ -358,11 +358,11 @@
 
       isDirty = false;
       saveBtn.classList.remove('dirty');
-      showToast('✓ Saved! Changes are live on your website.');
+      showToast('✓ ¡Guardado! Cambios publicados en tu sitio web.');
       sendToFrame({ type: 'EBWASH_SAVED_CLEAN' });
     } catch (e) {
       console.error('Save error:', e);
-      showToast('⚠️ Error saving changes.');
+      showToast('⚠️ Error al guardar los cambios.');
     }
   }
 

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>EB Wash Mobil — Visual Admin Editor</title>
+  <title>EB Wash Mobil — Panel de Administración y Editor Visual</title>
   <link rel="icon" type="image/png" href="photos/logo-circle.png">
   <link rel="shortcut icon" href="favicon.ico">
   
@@ -16,19 +16,19 @@
 </head>
 <body>
 
-  <!-- ================= 1. LOGIN SCREEN ================= -->
+  <!-- ================= 1. PANTALLA DE INICIO DE SESIÓN ================= -->
   <div id="loginView" class="login-view">
     <div class="login-card">
       <img src="photos/logo-circle.png" alt="EB Wash Mobil Logo" class="login-logo">
-      <h1 class="login-title">Client Admin Portal</h1>
-      <p class="login-subtitle">EB Wash Mobil LLC — Visual Site Editor</p>
+      <h1 class="login-title">Panel de Administración</h1>
+      <p class="login-subtitle">EB Wash Mobil LLC — Editor Visual del Sitio Web</p>
       
       <form id="loginForm">
         <div class="form-group">
-          <label class="form-label" for="adminPassword">Admin Password</label>
+          <label class="form-label" for="adminPassword">Contraseña de Administrador</label>
           <div class="password-input-wrap">
-            <input type="password" id="adminPassword" class="admin-input" placeholder="Enter password..." required autocomplete="current-password">
-            <button type="button" class="password-toggle-btn" id="togglePasswordBtn" aria-label="Toggle password visibility">
+            <input type="password" id="adminPassword" class="admin-input" placeholder="Ingresa tu contraseña..." required autocomplete="current-password">
+            <button type="button" class="password-toggle-btn" id="togglePasswordBtn" aria-label="Mostrar u ocultar contraseña">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
           </div>
@@ -36,97 +36,97 @@
         
         <button type="submit" class="btn-primary">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-          Log In To Visual Editor
+          Iniciar Sesión en el Editor
         </button>
 
         <div id="loginError" class="login-error">
-          Incorrect password. Please try again.
+          Contraseña incorrecta. Por favor intenta de nuevo.
         </div>
       </form>
     </div>
   </div>
 
-  <!-- ================= 2. VISUAL FULL-SCREEN EDITOR ================= -->
+  <!-- ================= 2. EDITOR VISUAL DE PANTALLA COMPLETA ================= -->
   <div id="adminApp" class="admin-app">
     
-    <!-- Top Header Navigation Bar -->
+    <!-- Barra Superior de Navegación -->
     <header class="admin-header">
       
-      <!-- Top / Left Row on Mobile -->
+      <!-- Fila Principal (Logo y Acciones) -->
       <div class="header-main-row">
         <div class="admin-brand">
           <img src="photos/logo-circle.png" alt="Logo">
           <span class="admin-brand-text">EB WASH MOBIL <span class="admin-brand-badge">EDITOR</span></span>
         </div>
 
-        <!-- Center Hint (Desktop Only) -->
+        <!-- Sugerencia de Ayuda (Desktop) -->
         <div class="editor-hint">
-          <span class="hint-dot"></span> Click &amp; type on any text or photo below
+          <span class="hint-dot"></span> Toca o haz clic en cualquier texto o foto para editarlo
         </div>
 
-        <!-- Action Buttons: Undo, Redo, Save, Live Site, Logout -->
+        <!-- Botones de Acción: Deshacer, Rehacer, Guardar, Sitio en Vivo, Salir -->
         <div class="header-actions">
-          <button id="undoBtn" class="btn-history" title="Undo Last Change (Ctrl+Z)" disabled>
+          <button id="undoBtn" class="btn-history" title="Deshacer último cambio (Ctrl+Z)" disabled>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
-            <span>Undo</span>
+            <span>Deshacer</span>
           </button>
           
-          <button id="redoBtn" class="btn-history" title="Redo Change (Ctrl+Y)" disabled>
+          <button id="redoBtn" class="btn-history" title="Rehacer cambio (Ctrl+Y)" disabled>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
-            <span>Redo</span>
+            <span>Rehacer</span>
           </button>
 
-          <button id="saveBtn" class="btn-save" title="Save changes and apply live (Ctrl+S)">
+          <button id="saveBtn" class="btn-save" title="Guardar cambios y publicar en vivo (Ctrl+S)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            <span>Save Changes</span>
+            <span>Guardar Cambios</span>
           </button>
 
-          <a href="index.html" target="_blank" class="btn-icon" title="Open Public Website (New Tab)">
+          <a href="index.html" target="_blank" class="btn-icon" title="Ver Sitio Web Público (Nueva Pestaña)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           </a>
 
-          <button id="logoutBtn" class="btn-icon" title="Log Out">
+          <button id="logoutBtn" class="btn-icon" title="Cerrar Sesión">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           </button>
         </div>
       </div>
 
-      <!-- Page Switcher Tabs (Bottom Row on Mobile / Inline on Desktop) -->
+      <!-- Pestañas para Cambiar de Página -->
       <nav class="nav-tabs" id="pageTabs">
         <button class="tab-btn active" data-tab="home" data-page="index.html">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          <span>Home</span>
+          <span>Inicio</span>
         </button>
         <button class="tab-btn" data-tab="service" data-page="service.html">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-          <span>Services</span>
+          <span>Servicios</span>
         </button>
         <button class="tab-btn" data-tab="gallery" data-page="gallery.html">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          <span>Gallery</span>
+          <span>Galería</span>
         </button>
         <button class="tab-btn" data-tab="contact" data-page="contact.html">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          <span>Contact</span>
+          <span>Contacto</span>
         </button>
       </nav>
 
     </header>
 
-    <!-- Full-Screen Interactive Website Frame -->
+    <!-- Contenedor del Sitio Web en Pantalla Completa -->
     <main class="admin-workspace-fullscreen">
       <iframe id="editorFrame" class="editor-frame" src="index.html"></iframe>
     </main>
 
   </div>
 
-  <!-- Toast Notification -->
+  <!-- Notificación Toast de Confirmación -->
   <div id="adminToast" class="admin-toast">
     <div class="toast-icon">✓</div>
-    <div id="toastMessage">Changes saved and live!</div>
+    <div id="toastMessage">¡Cambios guardados y publicados en tu sitio web!</div>
   </div>
 
-  <!-- Admin Controller Script -->
+  <!-- Script Controlador del Administrador -->
   <script src="admin.js"></script>
 </body>
 </html>
