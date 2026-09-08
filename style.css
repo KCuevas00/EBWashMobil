@@ -662,6 +662,11 @@ header.site.menu-open .nav-toggle-bar:nth-child(3) {
   user-select: none;
 }
 
+.hero-play-btn > *,
+.hero-sound-btn > * {
+  pointer-events: none;
+}
+
 .hero-play-btn {
   left: 28px;
 }

@@ -303,41 +303,45 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Primary Playback Engine: Main video plays first
-    // Default sound to ON as requested
-    heroVideoMain.muted = false;
+    // Start with volume 1
     heroVideoMain.volume = 1;
 
-    const startAutoplay = () => {
-      const playPromise = heroVideoMain.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          // Autoplay with sound succeeded
-          updateSoundUI(false);
-        }).catch(() => {
-          // Browser autoplay policy blocked sound on initial load.
-          // Fall back to muted playback so video starts immediately without delay.
-          heroVideoMain.muted = true;
-          heroVideoMain.play().catch(() => {});
-          updateSoundUI(true);
+    // Attempt unmuted playback first
+    heroVideoMain.muted = false;
+    const playPromise = heroVideoMain.play();
 
-          // Auto-unmute on user's first gesture anywhere on the page
-          const autoUnmuteOnFirstInteraction = () => {
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        // Autoplay with sound succeeded (user has MEI or permission)
+        updateSoundUI(false);
+      }).catch(() => {
+        // Autoplay with sound blocked by browser policy.
+        // Fall back to muted playback so video plays immediately without freeze.
+        heroVideoMain.muted = true;
+        heroVideoMain.play().catch(() => {});
+        updateSoundUI(true);
+
+        // Auto-unmute on first user gesture anywhere OUTSIDE the control buttons
+        const handleFirstUserInteraction = (e) => {
+          if (e.target && (e.target.closest('#heroSoundBtn') || e.target.closest('#heroPlayBtn'))) {
+            return; // Let the buttons handle their own clicks cleanly without interference!
+          }
+          if (heroVideoMain.muted) {
             heroVideoMain.muted = false;
             heroVideoMain.volume = 1;
+            heroVideoMain.play().catch(() => {});
             updateSoundUI(false);
-            window.removeEventListener('click', autoUnmuteOnFirstInteraction, true);
-            window.removeEventListener('touchstart', autoUnmuteOnFirstInteraction, true);
-            window.removeEventListener('keydown', autoUnmuteOnFirstInteraction, true);
-          };
+          }
+          ['click', 'touchstart', 'keydown'].forEach(type => {
+            document.removeEventListener(type, handleFirstUserInteraction);
+          });
+        };
 
-          window.addEventListener('click', autoUnmuteOnFirstInteraction, { capture: true, once: true });
-          window.addEventListener('touchstart', autoUnmuteOnFirstInteraction, { capture: true, once: true });
-          window.addEventListener('keydown', autoUnmuteOnFirstInteraction, { capture: true, once: true });
-        });
-      }
-    };
-
-    startAutoplay();
+        document.addEventListener('click', handleFirstUserInteraction);
+        document.addEventListener('touchstart', handleFirstUserInteraction, { passive: true });
+        document.addEventListener('keydown', handleFirstUserInteraction);
+      });
+    }
 
     // Start backdrop ONLY when main video is actually actively playing
     heroVideoMain.addEventListener('playing', () => {
@@ -384,16 +388,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Mute/Unmute Sound Button Handler (Bottom Right)
     if (heroSoundBtn) {
       heroSoundBtn.addEventListener('click', (e) => {
+        e.preventDefault();
         e.stopPropagation();
-        if (heroVideoMain.muted || heroVideoMain.volume === 0) {
+        if (heroVideoMain.muted) {
           heroVideoMain.muted = false;
           heroVideoMain.volume = 1;
-          heroVideoMain.play().then(() => {
-            updateSoundUI(false);
-          }).catch(() => {
-            heroVideoMain.muted = true;
-            updateSoundUI(true);
-          });
+          heroVideoMain.play().catch(() => {});
+          updateSoundUI(false);
         } else {
           heroVideoMain.muted = true;
           updateSoundUI(true);
