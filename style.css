@@ -643,6 +643,7 @@ header.site.menu-open .nav-toggle-bar:nth-child(3) {
   z-index: 10;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 10px 18px;
   background: rgba(12, 15, 18, 0.75);
@@ -657,7 +658,7 @@ header.site.menu-open .nav-toggle-bar:nth-child(3) {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
   user-select: none;
 }
@@ -669,10 +670,12 @@ header.site.menu-open .nav-toggle-bar:nth-child(3) {
 
 .hero-play-btn {
   left: 28px;
+  min-width: 98px;
 }
 
 .hero-sound-btn {
   right: 28px;
+  min-width: 122px;
 }
 
 .hero-play-btn:hover,
@@ -748,24 +751,6 @@ header.site.menu-open .nav-toggle-bar:nth-child(3) {
   background: rgba(12, 15, 18, 0.88);
 }
 
-/* Subtle attention-grabbing pulse when muted to invite unmuting */
-.hero-sound-btn.is-muted::before {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 183, 3, 0.5);
-  opacity: 0;
-  animation: soundPulse 3s infinite 1.5s;
-  pointer-events: none;
-}
-
-@keyframes soundPulse {
-  0% { transform: scale(0.98); opacity: 0.6; }
-  50% { transform: scale(1.08); opacity: 0; }
-  100% { transform: scale(1.08); opacity: 0; }
-}
-
 @media (max-width: 768px) {
   .hero-play-btn,
   .hero-sound-btn {
@@ -776,9 +761,11 @@ header.site.menu-open .nav-toggle-bar:nth-child(3) {
   }
   .hero-play-btn {
     left: 18px;
+    min-width: 84px;
   }
   .hero-sound-btn {
     right: 18px;
+    min-width: 106px;
   }
 }
 

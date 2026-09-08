@@ -268,120 +268,62 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (heroVideoMain) {
-    const updateSoundUI = (isMuted) => {
+    function setSoundUI(unmuted) {
       if (!heroSoundBtn) return;
-      if (isMuted) {
-        heroSoundBtn.classList.add('is-muted');
-        heroSoundBtn.setAttribute('aria-pressed', 'false');
-        heroSoundBtn.setAttribute('aria-label', 'Unmute audio');
-        heroSoundBtn.setAttribute('title', 'Click to unmute video audio');
-        if (heroSoundText) heroSoundText.textContent = 'Sound Off';
-      } else {
+      if (unmuted) {
         heroSoundBtn.classList.remove('is-muted');
         heroSoundBtn.setAttribute('aria-pressed', 'true');
         heroSoundBtn.setAttribute('aria-label', 'Mute audio');
         heroSoundBtn.setAttribute('title', 'Click to mute video audio');
         if (heroSoundText) heroSoundText.textContent = 'Sound On';
-      }
-    };
-
-    const updatePlayUI = (isPaused) => {
-      if (!heroPlayBtn) return;
-      if (isPaused) {
-        heroPlayBtn.classList.add('is-paused');
-        heroPlayBtn.setAttribute('aria-pressed', 'true');
-        heroPlayBtn.setAttribute('aria-label', 'Play video');
-        heroPlayBtn.setAttribute('title', 'Click to play video');
-        if (heroPlayText) heroPlayText.textContent = 'Play';
       } else {
+        heroSoundBtn.classList.add('is-muted');
+        heroSoundBtn.setAttribute('aria-pressed', 'false');
+        heroSoundBtn.setAttribute('aria-label', 'Unmute audio');
+        heroSoundBtn.setAttribute('title', 'Click to unmute video audio');
+        if (heroSoundText) heroSoundText.textContent = 'Sound Off';
+      }
+    }
+
+    function setPlayUI(isPlaying) {
+      if (!heroPlayBtn) return;
+      if (isPlaying) {
         heroPlayBtn.classList.remove('is-paused');
         heroPlayBtn.setAttribute('aria-pressed', 'false');
         heroPlayBtn.setAttribute('aria-label', 'Pause video');
         heroPlayBtn.setAttribute('title', 'Click to pause video');
         if (heroPlayText) heroPlayText.textContent = 'Pause';
+      } else {
+        heroPlayBtn.classList.add('is-paused');
+        heroPlayBtn.setAttribute('aria-pressed', 'true');
+        heroPlayBtn.setAttribute('aria-label', 'Play video');
+        heroPlayBtn.setAttribute('title', 'Click to play video');
+        if (heroPlayText) heroPlayText.textContent = 'Play';
       }
-    };
+    }
 
-    // Primary Playback Engine: Main video plays first
     // Default sound to ON as requested
     heroVideoMain.defaultMuted = false;
     heroVideoMain.muted = false;
     heroVideoMain.volume = 1;
-    updateSoundUI(false);
+    setSoundUI(true);
 
-    const unlockSound = () => {
-      heroVideoMain.muted = false;
-      heroVideoMain.volume = 1;
-      updateSoundUI(false);
-      ['pointerdown', 'touchstart', 'scroll', 'click', 'keydown'].forEach(evt => {
-        window.removeEventListener(evt, unlockSound, true);
-        document.removeEventListener(evt, unlockSound, true);
-      });
-    };
-
-    const playPromise = heroVideoMain.play();
-
-    if (playPromise !== undefined) {
-      playPromise.then(() => {
-        // Autoplay with sound succeeded!
-        updateSoundUI(false);
+    heroVideoMain.play().then(() => {
+      setSoundUI(true);
+      setPlayUI(true);
+    }).catch(() => {
+      // Browser autoplay policy blocked sound on initial load without gesture.
+      // Fall back to muted so video starts playing immediately:
+      heroVideoMain.muted = true;
+      setSoundUI(false);
+      heroVideoMain.play().then(() => {
+        setPlayUI(true);
       }).catch(() => {
-        // Browser autoplay policy requires user interaction before emitting audio.
-        // Temporarily mute so video starts streaming without stall:
-        heroVideoMain.muted = true;
-        heroVideoMain.play().catch(() => {});
-
-        // As soon as user touches, scrolls, or interacts, unmute immediately:
-        ['pointerdown', 'touchstart', 'scroll', 'click', 'keydown'].forEach(evt => {
-          window.addEventListener(evt, unlockSound, { once: true, passive: true });
-          document.addEventListener(evt, unlockSound, { once: true, passive: true });
-        });
+        setPlayUI(false);
       });
-    }
-
-    // Start backdrop ONLY when main video is actually actively playing
-    heroVideoMain.addEventListener('playing', () => {
-      updatePlayUI(false);
-      if (heroVideoBackdrop && window.innerWidth > 768) {
-        heroVideoBackdrop.currentTime = heroVideoMain.currentTime;
-        heroVideoBackdrop.play().catch(() => {});
-      }
     });
 
-    heroVideoMain.addEventListener('pause', () => {
-      updatePlayUI(true);
-      if (heroVideoBackdrop) {
-        heroVideoBackdrop.pause();
-      }
-    });
-
-    // Synchronize backdrop continuously on desktop
-    if (heroVideoBackdrop) {
-      heroVideoMain.addEventListener('seeking', () => {
-        heroVideoBackdrop.currentTime = heroVideoMain.currentTime;
-      });
-      heroVideoMain.addEventListener('timeupdate', () => {
-        if (window.innerWidth > 768 && Math.abs(heroVideoBackdrop.currentTime - heroVideoMain.currentTime) > 0.4) {
-          heroVideoBackdrop.currentTime = heroVideoMain.currentTime;
-        }
-      });
-    }
-
-    // Play/Pause Button Handler (Bottom Left)
-    if (heroPlayBtn) {
-      updatePlayUI(heroVideoMain.paused);
-
-      heroPlayBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (heroVideoMain.paused) {
-          heroVideoMain.play().catch(() => {});
-        } else {
-          heroVideoMain.pause();
-        }
-      });
-    }
-
-    // Mute/Unmute Sound Button Handler (Bottom Right)
+    // Sound Button Click: Explicit 1-to-1 toggle
     if (heroSoundBtn) {
       heroSoundBtn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -390,15 +332,50 @@ document.addEventListener('DOMContentLoaded', () => {
           heroVideoMain.muted = false;
           heroVideoMain.volume = 1;
           heroVideoMain.play().catch(() => {});
-          updateSoundUI(false);
+          setSoundUI(true);
         } else {
           heroVideoMain.muted = true;
-          updateSoundUI(true);
+          setSoundUI(false);
         }
       });
+    }
 
-      heroVideoMain.addEventListener('volumechange', () => {
-        updateSoundUI(heroVideoMain.muted || heroVideoMain.volume === 0);
+    // Play/Pause Button Click
+    if (heroPlayBtn) {
+      heroPlayBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (heroVideoMain.paused) {
+          heroVideoMain.play().catch(() => {});
+          setPlayUI(true);
+        } else {
+          heroVideoMain.pause();
+          setPlayUI(false);
+        }
+      });
+    }
+
+    heroVideoMain.addEventListener('play', () => setPlayUI(true));
+    heroVideoMain.addEventListener('pause', () => setPlayUI(false));
+
+    // Backdrop mirrors main playback without interfering
+    heroVideoMain.addEventListener('playing', () => {
+      setPlayUI(true);
+      if (heroVideoBackdrop && window.innerWidth > 768) {
+        heroVideoBackdrop.currentTime = heroVideoMain.currentTime;
+        heroVideoBackdrop.play().catch(() => {});
+      }
+    });
+
+    heroVideoMain.addEventListener('pause', () => {
+      if (heroVideoBackdrop) heroVideoBackdrop.pause();
+    });
+
+    if (heroVideoBackdrop) {
+      heroVideoMain.addEventListener('timeupdate', () => {
+        if (window.innerWidth > 768 && !heroVideoMain.paused && Math.abs(heroVideoBackdrop.currentTime - heroVideoMain.currentTime) > 0.4) {
+          heroVideoBackdrop.currentTime = heroVideoMain.currentTime;
+        }
       });
     }
   }
