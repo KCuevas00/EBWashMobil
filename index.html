@@ -14,11 +14,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Preload Hero Poster for Instant Paint -->
-  <link rel="preload" as="image" href="photos/hero-poster.webp" type="image/webp" fetchpriority="high">
-
   <!-- Master Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 
@@ -71,10 +68,10 @@
 <!-- ================= HERO (QUECHIDOS PURE VIDEO FOCUS) ================= -->
 <section id="top" class="hero">
   <div class="hero-media">
-    <video class="hero-video hero-video--backdrop" id="heroVideoBackdrop" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+    <video class="hero-video hero-video--backdrop" id="heroVideoBackdrop" muted loop playsinline preload="none" aria-hidden="true">
       <source src="videos/9e137564-1d63-43e3-bd87-0e26feb3c34c.MP4" type="video/mp4">
     </video>
-    <video class="hero-video hero-video--main" id="heroVideoMain" autoplay muted loop playsinline preload="auto" poster="photos/hero-poster.webp">
+    <video class="hero-video hero-video--main" id="heroVideoMain" autoplay muted loop playsinline preload="auto">
       <source src="videos/9e137564-1d63-43e3-bd87-0e26feb3c34c.MP4" type="video/mp4">
     </video>
 
