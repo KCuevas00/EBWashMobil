@@ -252,16 +252,137 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ---------- Hero Video Playback (Muted by Default) ----------
+  // ---------- Hero Video Playback & Audio Controls ----------
   const heroVideoMain = document.getElementById('heroVideoMain') || document.getElementById('heroVideo');
   const heroVideoBackdrop = document.getElementById('heroVideoBackdrop');
+  const heroPlayBtn = document.getElementById('heroPlayBtn');
+  const heroPlayText = document.getElementById('heroPlayText');
+  const heroSoundBtn = document.getElementById('heroSoundBtn');
+  const heroSoundText = document.getElementById('heroSoundText');
 
-  if (heroVideoMain) {
-    heroVideoMain.muted = true;
-    heroVideoMain.play().catch(() => {});
-  }
+  // Backdrop must strictly never have audio
   if (heroVideoBackdrop) {
     heroVideoBackdrop.muted = true;
-    heroVideoBackdrop.play().catch(() => {});
+    heroVideoBackdrop.volume = 0;
+
+    // On narrow screens (phones/small tablets), the main video covers the entire viewport.
+    // Pause backdrop decoding to save CPU/GPU and network buffer.
+    if (window.innerWidth <= 768) {
+      heroVideoBackdrop.pause();
+    } else {
+      heroVideoBackdrop.play().catch(() => {});
+    }
+  }
+
+  if (heroVideoMain) {
+    // Autoplay muted by default (standard browser autoplay policy requirement)
+    heroVideoMain.muted = true;
+    heroVideoMain.play().catch(() => {});
+
+    // Keep backdrop in sync on desktop
+    if (heroVideoBackdrop && window.innerWidth > 768) {
+      heroVideoMain.addEventListener('play', () => {
+        heroVideoBackdrop.play().catch(() => {});
+      });
+      heroVideoMain.addEventListener('pause', () => {
+        heroVideoBackdrop.pause();
+      });
+      heroVideoMain.addEventListener('seeking', () => {
+        heroVideoBackdrop.currentTime = heroVideoMain.currentTime;
+      });
+      heroVideoMain.addEventListener('timeupdate', () => {
+        if (Math.abs(heroVideoBackdrop.currentTime - heroVideoMain.currentTime) > 0.5) {
+          heroVideoBackdrop.currentTime = heroVideoMain.currentTime;
+        }
+      });
+    }
+
+    // Toggle Play/Pause Button Logic (Bottom Left)
+    if (heroPlayBtn) {
+      const updatePlayUI = (isPaused) => {
+        if (isPaused) {
+          heroPlayBtn.classList.add('is-paused');
+          heroPlayBtn.setAttribute('aria-pressed', 'true');
+          heroPlayBtn.setAttribute('aria-label', 'Play video');
+          heroPlayBtn.setAttribute('title', 'Click to play video');
+          if (heroPlayText) heroPlayText.textContent = 'Play';
+        } else {
+          heroPlayBtn.classList.remove('is-paused');
+          heroPlayBtn.setAttribute('aria-pressed', 'false');
+          heroPlayBtn.setAttribute('aria-label', 'Pause video');
+          heroPlayBtn.setAttribute('title', 'Click to pause video');
+          if (heroPlayText) heroPlayText.textContent = 'Pause';
+        }
+      };
+
+      // Initial state sync
+      updatePlayUI(heroVideoMain.paused);
+
+      heroPlayBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (heroVideoMain.paused) {
+          heroVideoMain.play().then(() => {
+            if (heroVideoBackdrop && window.innerWidth > 768) {
+              heroVideoBackdrop.play().catch(() => {});
+            }
+            updatePlayUI(false);
+          }).catch(() => {});
+        } else {
+          heroVideoMain.pause();
+          if (heroVideoBackdrop) {
+            heroVideoBackdrop.pause();
+          }
+          updatePlayUI(true);
+        }
+      });
+
+      heroVideoMain.addEventListener('play', () => updatePlayUI(false));
+      heroVideoMain.addEventListener('pause', () => updatePlayUI(true));
+    }
+
+    // Toggle Sound Button Logic (Bottom Right)
+    if (heroSoundBtn) {
+      const updateSoundUI = (isMuted) => {
+        if (isMuted) {
+          heroSoundBtn.classList.add('is-muted');
+          heroSoundBtn.setAttribute('aria-pressed', 'false');
+          heroSoundBtn.setAttribute('aria-label', 'Unmute audio');
+          heroSoundBtn.setAttribute('title', 'Click to unmute video audio');
+          if (heroSoundText) heroSoundText.textContent = 'Sound Off';
+        } else {
+          heroSoundBtn.classList.remove('is-muted');
+          heroSoundBtn.setAttribute('aria-pressed', 'true');
+          heroSoundBtn.setAttribute('aria-label', 'Mute audio');
+          heroSoundBtn.setAttribute('title', 'Click to mute video audio');
+          if (heroSoundText) heroSoundText.textContent = 'Sound On';
+        }
+      };
+
+      // Initial state sync
+      updateSoundUI(heroVideoMain.muted);
+
+      heroSoundBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (heroVideoMain.muted) {
+          heroVideoMain.muted = false;
+          heroVideoMain.volume = 1;
+          heroVideoMain.play().then(() => {
+            updateSoundUI(false);
+          }).catch(() => {
+            // Fallback if browser prevented unmuting
+            heroVideoMain.muted = true;
+            updateSoundUI(true);
+          });
+        } else {
+          heroVideoMain.muted = true;
+          updateSoundUI(true);
+        }
+      });
+
+      // Keep UI synchronized if user or system changes volume/mute
+      heroVideoMain.addEventListener('volumechange', () => {
+        updateSoundUI(heroVideoMain.muted || heroVideoMain.volume === 0);
+      });
+    }
   }
 });
