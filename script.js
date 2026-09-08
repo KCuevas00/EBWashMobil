@@ -303,43 +303,39 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Primary Playback Engine: Main video plays first
-    // Start with volume 1
-    heroVideoMain.volume = 1;
-
-    // Attempt unmuted playback first
+    // Default sound to ON as requested
+    heroVideoMain.defaultMuted = false;
     heroVideoMain.muted = false;
+    heroVideoMain.volume = 1;
+    updateSoundUI(false);
+
+    const unlockSound = () => {
+      heroVideoMain.muted = false;
+      heroVideoMain.volume = 1;
+      updateSoundUI(false);
+      ['pointerdown', 'touchstart', 'scroll', 'click', 'keydown'].forEach(evt => {
+        window.removeEventListener(evt, unlockSound, true);
+        document.removeEventListener(evt, unlockSound, true);
+      });
+    };
+
     const playPromise = heroVideoMain.play();
 
     if (playPromise !== undefined) {
       playPromise.then(() => {
-        // Autoplay with sound succeeded (user has MEI or permission)
+        // Autoplay with sound succeeded!
         updateSoundUI(false);
       }).catch(() => {
-        // Autoplay with sound blocked by browser policy.
-        // Fall back to muted playback so video plays immediately without freeze.
+        // Browser autoplay policy requires user interaction before emitting audio.
+        // Temporarily mute so video starts streaming without stall:
         heroVideoMain.muted = true;
         heroVideoMain.play().catch(() => {});
-        updateSoundUI(true);
 
-        // Auto-unmute on first user gesture anywhere OUTSIDE the control buttons
-        const handleFirstUserInteraction = (e) => {
-          if (e.target && (e.target.closest('#heroSoundBtn') || e.target.closest('#heroPlayBtn'))) {
-            return; // Let the buttons handle their own clicks cleanly without interference!
-          }
-          if (heroVideoMain.muted) {
-            heroVideoMain.muted = false;
-            heroVideoMain.volume = 1;
-            heroVideoMain.play().catch(() => {});
-            updateSoundUI(false);
-          }
-          ['click', 'touchstart', 'keydown'].forEach(type => {
-            document.removeEventListener(type, handleFirstUserInteraction);
-          });
-        };
-
-        document.addEventListener('click', handleFirstUserInteraction);
-        document.addEventListener('touchstart', handleFirstUserInteraction, { passive: true });
-        document.addEventListener('keydown', handleFirstUserInteraction);
+        // As soon as user touches, scrolls, or interacts, unmute immediately:
+        ['pointerdown', 'touchstart', 'scroll', 'click', 'keydown'].forEach(evt => {
+          window.addEventListener(evt, unlockSound, { once: true, passive: true });
+          document.addEventListener(evt, unlockSound, { once: true, passive: true });
+        });
       });
     }
 
