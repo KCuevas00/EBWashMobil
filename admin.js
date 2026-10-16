@@ -264,17 +264,37 @@
     return JSON.parse(JSON.stringify(obj));
   }
 
-  function initContent() {
+  async function initContent() {
     let saved = null;
     try {
-      const localStr = localStorage.getItem(STORAGE_KEY);
-      if (localStr) saved = JSON.parse(localStr);
+      const res = await fetch('/api/content').catch(() => null);
+      if (res && res.ok) {
+        const cloudData = await res.json();
+        if (cloudData && typeof cloudData === 'object' && cloudData.global) {
+          saved = cloudData;
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudData));
+          } catch (e) {}
+        }
+      }
     } catch (e) {}
+
+    if (!saved) {
+      try {
+        const localStr = localStorage.getItem(STORAGE_KEY);
+        if (localStr) saved = JSON.parse(localStr);
+      } catch (e) {}
+    }
 
     siteData = deepClone(saved || DEFAULT_SITE_DATA);
     historyStack = [deepClone(siteData)];
     historyIndex = 0;
     updateHistoryButtons();
+
+    sendToFrame({
+      type: 'EBWASH_ENABLE_INLINE_ADMIN',
+      payload: siteData
+    });
   }
 
   function pushHistory(newData) {
@@ -286,7 +306,8 @@
     }
 
     historyStack.push(deepClone(siteData));
-    if (historyStack.length > 50) historyStack.shift();
+    // Keep stack memory lean (prevents mobile browser tab crashes)
+    if (historyStack.length > 10) historyStack.shift();
     historyIndex = historyStack.length - 1;
 
     isDirty = true;
@@ -346,15 +367,29 @@
   // ================= 3. SAVE & PERSISTENCE =================
   async function saveContent() {
     if (!siteData) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(siteData));
+    saveBtn.disabled = true;
+    const saveLabel = saveBtn.querySelector('span');
+    const prevText = saveLabel ? saveLabel.textContent : '';
+    if (saveLabel) saveLabel.textContent = 'Guardando...';
 
-      // Post to Cloudflare endpoint
-      fetch('/api/save', {
+    try {
+      // 1. Try to cache in browser localStorage (isolated so quota errors never block Cloudflare save)
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(siteData));
+      } catch (storageErr) {
+        console.warn('LocalStorage quota limit reached; proceeding with Cloudflare cloud save.', storageErr);
+      }
+
+      // 2. Post to Cloudflare Pages endpoint
+      const res = await fetch('/api/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: siteData })
-      }).catch(() => {});
+      });
+
+      if (!res.ok) {
+        throw new Error('Server returned status: ' + res.status);
+      }
 
       isDirty = false;
       saveBtn.classList.remove('dirty');
@@ -363,6 +398,9 @@
     } catch (e) {
       console.error('Save error:', e);
       showToast('⚠️ Error al guardar los cambios.');
+    } finally {
+      saveBtn.disabled = false;
+      if (saveLabel) saveLabel.textContent = prevText || 'Guardar Cambios';
     }
   }
 

@@ -790,13 +790,21 @@
       if (!file) return;
 
       const reader = new FileReader();
+      reader.onerror = () => {
+        alert('Error al leer el archivo. Por favor intenta de nuevo.');
+        input.value = '';
+      };
       reader.onload = (event) => {
         const img = new Image();
+        img.onerror = () => {
+          alert('No se pudo procesar la imagen seleccionada. Por favor asegúrate de seleccionar una imagen en formato JPG, PNG o WEBP.');
+          input.value = '';
+        };
         img.onload = () => {
           const canvas = document.createElement('canvas');
           let width = img.width;
           let height = img.height;
-          const maxDim = 1600;
+          const maxDim = 1000;
 
           if (width > maxDim || height > maxDim) {
             if (width > height) {
@@ -813,7 +821,8 @@
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
 
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          // Highly optimized JPEG at 72% quality (drops photo size ~90% to ~100-150KB)
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.72);
           callback(compressedDataUrl);
           input.value = '';
         };
@@ -829,21 +838,26 @@
   async function init() {
     let loadedData = null;
 
+    // Fetch latest published content from Cloudflare KV first
     try {
-      const localStr = localStorage.getItem(STORAGE_KEY);
-      if (localStr) loadedData = JSON.parse(localStr);
-    } catch (e) {}
+      const res = await fetch('/api/content').catch(() => null);
+      if (res && res.ok) {
+        const cloudData = await res.json();
+        if (cloudData && typeof cloudData === 'object' && cloudData.global) {
+          loadedData = cloudData;
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudData));
+          } catch (e) {}
+        }
+      }
+    } catch (err) {}
 
+    // Fall back to localStorage if offline or KV not yet populated
     if (!loadedData) {
       try {
-        const res = await fetch('/api/content').catch(() => null);
-        if (res && res.ok) {
-          const cloudData = await res.json();
-          if (cloudData && typeof cloudData === 'object' && cloudData.global) {
-            loadedData = cloudData;
-          }
-        }
-      } catch (err) {}
+        const localStr = localStorage.getItem(STORAGE_KEY);
+        if (localStr) loadedData = JSON.parse(localStr);
+      } catch (e) {}
     }
 
     applyContent(loadedData || DEFAULT_SITE_DATA);
